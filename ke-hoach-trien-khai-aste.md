@@ -1,6 +1,6 @@
 # Kế hoạch triển khai bài tập lớn NLP: So sánh các phương pháp ASTE
 
-> **Giả định của bản kế hoạch:** nhóm 3 người, thời gian 6 tuần, chạy trên Google Colab / Kaggle (GPU T4 hoặc P100). Nếu khác, điều chỉnh lại mục 8 và mục 9.
+> **Giả định của bản kế hoạch:** nhóm 4 người, thời gian 6 tuần (hạn nộp chưa chốt), huấn luyện hoàn toàn trên Kaggle với một loại GPU cố định (T4). Nếu khác, điều chỉnh lại mục 8, mục 9 và `phan-cong-cong-viec.md`.
 > Các con số F1 công bố và số câu của từng tập được ghi theo trí nhớ, **cần đối chiếu lại với paper trước khi nộp**. Các đường dẫn paper, repo và dữ liệu đã được tra lại.
 
 ## 1. Tổng quan đề tài
@@ -30,7 +30,7 @@ Ví dụ minh họa: "Pin bền nhưng màn hình tối" → (pin, bền, POS), 
 
 ### 2.1. Ba paper chính
 
-| Hướng tiếp cận | Paper | Hội nghị | Backbone | Paper | Mã nguồn chính thức |
+| Hướng tiếp cận | Tên paper | Hội nghị | Backbone | Đường dẫn | Mã nguồn chính thức |
 |---|---|---|---|---|---|
 | Gán nhãn lưới | EMC-GCN: Enhanced Multi-Channel Graph Convolutional Network for ASTE | ACL 2022 | BERT-base | [Paper](https://aclanthology.org/2022.acl-long.212) | [GitHub](https://github.com/CCChenhao997/EMCGCN-ASTE) |
 | Trích xuất theo span | Span-ASTE: Learning Span-Level Interactions for ASTE | ACL 2021 | BERT-base | [Paper](https://aclanthology.org/2021.acl-long.367.pdf) | [GitHub](https://github.com/chiayewken/Span-ASTE) |
@@ -42,20 +42,26 @@ Ví dụ minh họa: "Pin bền nhưng màn hình tối" → (pin, bền, POS), 
 - **Span-ASTE:** liệt kê mọi span ứng viên, phân loại span nào là khía cạnh hoặc ý kiến, lọc bớt, rồi ghép cặp và phân loại cảm xúc ở mức span. Nhờ biểu diễn mức span, mô hình xử lý tốt các cụm nhiều từ.
 - **MvP:** đưa bài toán về dạng sinh văn bản với T5. Mỗi bộ ba được sinh dưới dạng chuỗi có đánh dấu phần tử, ví dụ `[A] pin [O] bền [S] tích cực`. Thứ tự các phần tử (A, O, S) được hoán vị và đưa vào prompt, mỗi thứ tự là một "góc nhìn". Khi huấn luyện, mỗi câu được ghép với nhiều thứ tự, chọn theo điểm entropy trên tập huấn luyện. Khi suy luận, mô hình sinh kết quả theo từng thứ tự rồi bỏ phiếu, chỉ giữ các bộ ba xuất hiện ở đa số góc nhìn.
 
-**Lý do chọn:** cả ba cùng tác vụ, cùng benchmark ASTE-Data-V2, đều đăng ở ACL (CORE A*), có mã nguồn chính thức, và đại diện cho ba hướng tiếp cận nối tiếp nhau trong giai đoạn 2021–2023.
+**Lý do chọn:** cả ba cùng tác vụ, cùng benchmark ASTE-Data-V2, đều đăng ở ACL (CORE A*), có mã nguồn chính thức, và mỗi paper là một đại diện tiêu biểu cho một hướng tiếp cận khác nhau (gán nhãn lưới, span, sinh văn bản), công bố trong giai đoạn 2021–2023.
+
+Lưu ý khi trình bày: ba hướng này không nối tiếp nhau theo đúng thứ tự thời gian. Hướng gán nhãn lưới bắt đầu từ GTS (2020), còn EMC-GCN (2022) ra sau Span-ASTE (2021). Vì vậy nên gọi là ba hướng tiếp cận, không gọi là ba thế hệ kế tiếp.
 
 ### 2.2. Baseline truyền thống
 
 | Baseline | Nguồn | Hướng | Cách dùng | Liên kết |
 |---|---|---|---|---|
-| Peng et al. two-stage | AAAI 2020 | Pipeline hai giai đoạn | Trích số từ paper | [Paper](https://arxiv.org/abs/1911.01616) |
-| CMLA+, RINANTE+, Li-unified-R+ | Biến thể trong Peng et al. | Pipeline | Trích số từ paper | [Paper](https://arxiv.org/abs/1911.01616) |
+| Peng et al. two-stage | AAAI 2020 | Pipeline hai giai đoạn | Trích số trên V2 (theo Xu et al. 2020) | [Paper](https://arxiv.org/abs/1911.01616) |
+| CMLA+, RINANTE+, Li-unified-R+ | Biến thể trong Peng et al. | Pipeline | Trích số trên V2 (theo Xu et al. 2020) | [Paper](https://arxiv.org/abs/1911.01616) |
 | OTE-MTL | Findings of EMNLP 2020 | Học đa nhiệm | Trích số từ paper | [Paper](https://arxiv.org/abs/2010.01512), [GitHub](https://github.com/GeneZC/OTE-MTL) |
 | JET | EMNLP 2020 | Gán nhãn theo vị trí | Trích số (chạy lại nếu còn thời gian) | [Paper](https://arxiv.org/abs/2010.02609), [GitHub](https://github.com/xuuuluuu/Position-Aware-Tagging-for-ASTE) |
 | GTS-BiLSTM, GTS-BERT | Findings of EMNLP 2020 | Gán nhãn lưới | **Tự chạy lại** | [Paper](https://aclanthology.org/2020.findings-emnlp.234), [GitHub](https://github.com/NJUNLP/GTS) |
 | BARTABSA | ACL 2021 | Sinh chỉ số con trỏ | Trích số, làm mốc cho hướng sinh | [Paper](https://arxiv.org/pdf/2106.04300), [GitHub](https://github.com/yhcc/BARTABSA) |
 
 Số của các baseline trên ASTE-Data-V2 lấy từ bảng kết quả trong paper Span-ASTE và EMC-GCN. Trong báo cáo phải đánh dấu rõ số nào tự chạy, số nào trích.
+
+Paper gốc của Peng et al. báo cáo trên bản dữ liệu V1. Số của nhóm baseline pipeline trên V2 là do Xu et al. 2020 (paper JET, cũng là paper công bố ASTE-Data-V2) chạy lại, nên khi trích phải dẫn nguồn là bảng trong các paper sau, không dẫn paper gốc.
+
+**Baseline không dùng học sâu (chờ giảng viên trả lời):** mọi baseline ở bảng trên đều là mạng nơ-ron. Nếu giảng viên hiểu "phương pháp truyền thống" là phương pháp không dùng học sâu, nhóm bổ sung một baseline dựa trên luật: dùng cây cú pháp phụ thuộc để lấy danh từ làm khía cạnh và tính từ liên kết với nó làm ý kiến, rồi tra cảm xúc từ một từ điển cảm xúc. D phụ trách, làm ở tuần 4.
 
 ## 3. Dữ liệu
 
@@ -80,7 +86,7 @@ Nguồn:
 
 | Bộ dữ liệu | Mục đích | Ghi chú | Liên kết |
 |---|---|---|---|
-| DMASTE (Findings of ACL 2023) | Kiểm tra tổng quát hóa khác miền | Ưu tiên số 1 cho phần điểm cộng. Có khía cạnh ẩn, cần lọc | [Paper](https://aclanthology.org/2023.findings-acl.178), [GitHub](https://github.com/NJUNLP/DMASTE) |
+| DMASTE (Findings of ACL 2023) | Kiểm tra tổng quát hóa khác miền | Ưu tiên số 1 cho phần điểm cộng. Khi tải về cần kiểm tra có khía cạnh ẩn hay không; nếu có thì lọc | [Paper](https://aclanthology.org/2023.findings-acl.178), [GitHub](https://github.com/NJUNLP/DMASTE) |
 | Domain-expanded ASTE (DAMO-NLP-SG) | Kiểm tra tổng quát hóa khác miền | Lựa chọn thay thế cho DMASTE | [GitHub](https://github.com/DAMO-NLP-SG/domain-expanded-aste) |
 | ASQP Rest15/Rest16 (EMNLP 2021) | Thêm dữ liệu cùng miền | Bỏ phần danh mục, lọc mẫu ẩn. Cùng nguồn SemEval với 15res, 16res nên phải lọc câu trùng | [Paper](https://aclanthology.org/2021.emnlp-main.726.pdf), [GitHub](https://github.com/IsakZhang/ABSA-QUAD) |
 | ACOS Restaurant/Laptop (ACL 2021) | Thêm dữ liệu cùng miền | Bỏ phần danh mục, lọc mẫu có khía cạnh hoặc ý kiến ẩn | [Paper](https://aclanthology.org/2021.acl-long.29.pdf), [GitHub](https://github.com/NUSTM/ACOS) |
@@ -113,10 +119,11 @@ Nguồn:
 
 - [ ] Clone bốn repo (EMC-GCN, Span-ASTE, MvP, GTS), mỗi repo một notebook riêng.
 - [ ] Cài đúng phiên bản thư viện theo `requirements` của từng repo. Span-ASTE dùng AllenNLP bản cũ, làm sớm nhất.
-- [ ] Tải ASTE-Data-V2, chuyển format, chạy script kiểm tra.
+- [ ] Tải ASTE-Data-V2, chuyển format, chạy script kiểm tra. Repo GTS gốc đi kèm một bản dữ liệu riêng, không phải ASTE-Data-V2, nên phải chuyển dữ liệu V2 sang format của GTS. EMC-GCN viết dựa trên mã của GTS và dùng format gần giống, nên hai mô hình này dùng chung một script chuyển format.
 - [ ] Chạy thử mỗi mô hình 1 epoch trên 14lap để chắc chắn pipeline thông.
+- [ ] Đo thời gian một lần chạy đầy đủ của mỗi mô hình trên 14lap, rồi lập bảng ước lượng giờ GPU: thời gian mỗi lần chạy × 4 tập × số seed, so với quota Kaggle của cả nhóm. Dựa vào bảng này để chốt số seed và số tập trước khi sang giai đoạn 2.
 
-**Kết quả cần có:** bốn notebook chạy được từ đầu đến cuối, có lưu log.
+**Kết quả cần có:** bốn notebook chạy được từ đầu đến cuối, có lưu log; bảng ước lượng giờ GPU.
 
 ### Giai đoạn 2: Reproduce
 
@@ -139,9 +146,10 @@ Các nguyên nhân chênh lệch thường gặp cần kiểm tra: khác seed, k
 ### Giai đoạn 3: So sánh thống nhất
 
 - [ ] Viết một script đánh giá chung: đưa đầu ra của mọi mô hình về cùng dạng tập bộ ba cho mỗi câu, rồi tính P, R, F1 (đúng khi khớp chính xác cả ba phần tử).
-- [ ] Lưu ý: MvP so khớp trên văn bản, hai mô hình còn lại so khớp trên chỉ số. Thống nhất một cách (đề xuất: so trên văn bản đã chuẩn hóa chữ thường) và ghi rõ trong báo cáo.
-- [ ] Lập bảng tổng hợp: ba mô hình chính, GTS tự chạy, baseline trích số.
-- [ ] Lập bảng chi phí: số tham số, thời gian huấn luyện, thời gian suy luận mỗi câu, phần cứng.
+- [ ] Lưu ý: MvP so khớp trên văn bản, các mô hình còn lại so khớp trên chỉ số. Bảng so sánh chính dùng một cách chung cho mọi mô hình: so trên văn bản đã chuẩn hóa chữ thường. Cách này lỏng hơn so trên chỉ số (một từ lặp lại trong câu vẫn được tính đúng), nên với các mô hình có chỉ số phải báo cáo thêm F1 so trên chỉ số, để thấy chênh lệch do cách so khớp và để đối chiếu với số công bố.
+- [ ] Lập bảng tổng hợp: ba mô hình chính, GTS tự chạy, baseline trích số. Báo cáo trung bình ± độ lệch chuẩn qua các seed.
+- [ ] Kiểm định ý nghĩa thống kê giữa các cặp mô hình chính (ví dụ paired bootstrap trên tập test). Các mô hình chỉ cách nhau 1–3 điểm F1 trên tập test nhỏ, nên chỉ kết luận mô hình nào tốt hơn khi chênh lệch có ý nghĩa.
+- [ ] Lập bảng chi phí: số tham số, thời gian huấn luyện, thời gian suy luận mỗi câu, phần cứng. Mọi số đo thời gian lấy trên cùng một loại GPU (T4). Với MvP, đo riêng thời gian suy luận theo số góc nhìn, vì mô hình sinh kết quả cho từng góc nhìn rồi mới bỏ phiếu.
 - [ ] Nêu rõ khác biệt backbone (BERT-base khoảng 110M, T5-base khoảng 220M tham số) khi kết luận.
 
 ### Giai đoạn 4: Phân tích lỗi
@@ -182,7 +190,7 @@ Các nguyên nhân chênh lệch thường gặp cần kiểm tra: khác seed, k
 aste-comparison/
 ├── data/            # dữ liệu gốc và script chuyển format
 ├── models/          # mỗi mô hình một thư mục (fork từ repo tác giả)
-├── notebooks/       # notebook huấn luyện trên Colab/Kaggle
+├── notebooks/       # notebook huấn luyện trên Kaggle
 ├── eval/            # script đánh giá chung, phân tích lỗi
 ├── results/         # log, file dự đoán, bảng kết quả
 ├── demo/            # ứng dụng Gradio
@@ -206,28 +214,32 @@ aste-comparison/
 
 | Tuần | Công việc | Kết quả cần có |
 |---|---|---|
-| 1 | Giai đoạn 0 và 1 | Đề tài được duyệt, bốn repo chạy thử được |
-| 2–3 | Giai đoạn 2 | Bảng reproduce đủ seed |
-| 4 | Giai đoạn 3 | Bảng so sánh thống nhất, bảng chi phí |
+| 1 | Giai đoạn 0 và 1 | Đề tài được duyệt, bốn repo chạy thử được, đo được thời gian một lần chạy đầy đủ của mỗi mô hình |
+| 2–3 | Giai đoạn 2; viết sớm script đánh giá chung của giai đoạn 3 | Bảng reproduce đủ seed, mọi file dự đoán được chấm bằng cùng một script |
+| 4 | Giai đoạn 3; chuẩn bị cho giai đoạn 4 và 5 (công cụ phân tích lỗi, khung demo, dữ liệu DMASTE) | Bảng so sánh thống nhất, bảng chi phí |
 | 5 | Giai đoạn 4 và 5 | Phân tích lỗi, demo, kết quả DMASTE |
 | 6 | Giai đoạn 6 | Báo cáo, slide, repo hoàn chỉnh |
 
-## 9. Phân công đề xuất (3 người)
+## 9. Phân công đề xuất (4 người)
 
 | Thành viên | Giai đoạn 1–2 | Giai đoạn 3–6 |
 |---|---|---|
-| A | EMC-GCN và GTS | Script đánh giá chung, bảng so sánh |
-| B | Span-ASTE | Phân tích lỗi |
-| C | MvP | Dữ liệu bổ sung, demo Gradio |
+| A | EMC-GCN và GTS | Bảng so sánh tổng hợp, bảng chi phí |
+| B | Span-ASTE | Chủ trì phân tích lỗi |
+| C | MvP | Demo Gradio, thử nghiệm số góc nhìn của MvP |
+| D | Dữ liệu, script chuyển format, script đánh giá chung, gom số baseline | DMASTE, baseline dựa trên luật (nếu giảng viên yêu cầu), tổng hợp báo cáo |
 
-Cả nhóm cùng viết báo cáo; mỗi người viết phần mô hình mình phụ trách.
+Mỗi người viết phần báo cáo của mô hình mình phụ trách và tự giải thích lỗi của mô hình đó; D ghép và thống nhất báo cáo.
+
+Công việc theo tuần của từng người, quy ước dùng Kaggle, format file dự đoán và các mốc giao nhận: xem `phan-cong-cong-viec.md`.
 
 ## 10. Rủi ro và phương án dự phòng
 
 | Rủi ro | Phương án |
 |---|---|
 | Xung đột thư viện cũ (AllenNLP) | Dùng môi trường riêng với đúng phiên bản Python; nếu không được, dùng bản cài lại công khai và ghi rõ nguồn |
-| Colab ngắt phiên giữa chừng | Lưu checkpoint và log lên Drive sau mỗi epoch; ưu tiên Kaggle cho lần chạy dài |
+| Phiên Kaggle hết giờ hoặc bị ngắt giữa chừng | Chạy nền bằng "Save & Run All"; chia notebook theo từng tập hoặc từng nhóm seed; lưu checkpoint và log vào `/kaggle/working` sau mỗi epoch |
+| Hết quota GPU hằng tuần của Kaggle | Tính tổng giờ cần sau tuần 1 để chốt số seed; D dùng tài khoản của mình chạy hộ seed |
 | MvP huấn luyện lâu do nhân dữ liệu theo số góc nhìn | Giảm số seed của MvP trước khi giảm số tập dữ liệu |
 | Không đủ thời gian chạy hết | Ưu tiên đủ seed trên 14lap và 14res hơn là 1 seed trên cả 4 tập |
 | Kết quả lệch nhiều so với paper | Kiểm tra lại dữ liệu và siêu tham số; nếu vẫn lệch, báo cáo trung thực kèm phân tích nguyên nhân |
