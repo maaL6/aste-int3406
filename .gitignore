@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Checkpoint và output huấn luyện (lưu trên Kaggle Dataset, không đưa vào git)
+*.pt
+*.pth
+*.bin
+*.ckpt
+*.safetensors
+*.tar.gz
+savemodel/
+outputs/
+model_outputs/
