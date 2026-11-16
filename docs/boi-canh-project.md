@@ -85,7 +85,7 @@ Các điều chỉnh dưới đây là đề xuất, cần nhóm chốt và gi�
 | Hạng mục | Ban đầu | Điều chỉnh | Lý do |
 |---|---|---|---|
 | Paper thứ hai | BARTABSA | [EMC-GCN](https://aclanthology.org/2022.acl-long.212) (ACL 2022) | BARTABSA và MvP cùng là hướng sinh. Thay bằng một paper gán nhãn lưới để có ba hướng khác nhau: gán nhãn, span, sinh văn bản |
-| Baseline truyền thống | Chưa có | Tự chạy GTS; trích số Peng et al. two-stage, CMLA+, RINANTE+, Li-unified-R+, OTE-MTL, JET | Đề yêu cầu so sánh cả phương pháp truyền thống nhắc đến trong paper |
+| Baseline truyền thống | Chưa có | Tự chạy GTS; trích số Peng et al. two-stage, CMLA+, RINANTE+, Li-unified-R+, OTE-MTL, JET; tự cài hai baseline không dùng học sâu (luật cú pháp + từ điển, CRF + hồi quy logistic) | Đề yêu cầu so sánh cả phương pháp truyền thống nhắc đến trong paper |
 | Nguồn dữ liệu | Bản NEUDM trên Hugging Face | Bản gốc [xuuuluuu/SemEval-Triplet-data](https://github.com/xuuuluuu/SemEval-Triplet-data) | Bản NEUDM đã chuyển sang dạng sinh văn bản, không còn chỉ số vị trí mà hai mô hình trích xuất cần |
 | Dữ liệu bổ sung | Chưa có | [DMASTE](https://github.com/NJUNLP/DMASTE) để kiểm tra khác miền | Phần mở rộng cho điểm cộng |
 
@@ -101,7 +101,7 @@ BARTABSA được giữ lại làm mốc tham chiếu cho hướng sinh (trích 
 | Đại diện các thế hệ phương pháp | Đạt sau điều chỉnh: gán nhãn lưới, span, sinh văn bản |
 | Dữ liệu công khai, cùng benchmark | Đạt: ASTE-Data-V2, cả ba paper đều báo cáo trên bộ này |
 | Chạy được với tài nguyên nhóm | Dự kiến đạt: mô hình cỡ base, mỗi tập khoảng một nghìn câu train |
-| So sánh cả phương pháp truyền thống | Đã lên danh sách baseline; cần hỏi giảng viên "truyền thống" hiểu theo nghĩa nào |
+| So sánh cả phương pháp truyền thống | Đã lên danh sách: baseline nơ-ron đời trước (trích số, GTS tự chạy) và hai baseline không dùng học sâu do nhóm tự cài |
 | Phân tích lỗi | Chưa làm, đã có kế hoạch |
 | Điểm cộng | Dự kiến: kiểm tra khác miền và demo Gradio |
 
@@ -109,5 +109,5 @@ BARTABSA được giữ lại làm mốc tham chiếu cho hướng sinh (trích 
 
 - Nhóm có đồng ý thay BARTABSA bằng EMC-GCN không.
 - Số thành viên và hạn nộp, để chỉnh tiến độ và phân công.
-- Hỏi giảng viên: "phương pháp truyền thống" có cần gồm phương pháp không dùng học sâu (ví dụ dựa trên luật) không.
+- Báo giảng viên danh sách baseline truyền thống (gồm cả hai baseline không dùng học sâu) khi nộp danh sách paper.
 - Nộp danh sách paper để duyệt trước khi cài đặt.

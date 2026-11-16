@@ -12,7 +12,7 @@ Tài liệu này thay cho mục 9 trong `ke-hoach-trien-khai-aste.md`. Nội dun
 | A | Hướng gán nhãn lưới | EMC-GCN, GTS-BERT, GTS-BiLSTM | Bảng so sánh tổng hợp, bảng chi phí |
 | B | Hướng span | Span-ASTE | Chủ trì phân tích lỗi |
 | C | Hướng sinh văn bản | MvP | Demo Gradio, thử nghiệm số góc nhìn |
-| D | Dữ liệu và đánh giá | Không huấn luyện mô hình chính | DMASTE, baseline dựa trên luật, tổng hợp báo cáo |
+| D | Dữ liệu và đánh giá | Không huấn luyện mô hình chính | Hai baseline không dùng học sâu (luật, CRF), DMASTE, tổng hợp báo cáo |
 
 Lý do chia:
 
@@ -29,7 +29,7 @@ Lý do chia:
 |---|---|---|
 | 1 | Clone hai repo, dựng môi trường trên Kaggle, chạy thử 1 epoch trên 14lap | Hai notebook chạy thông, có log |
 | 2–3 | Huấn luyện EMC-GCN, GTS-BERT, GTS-BiLSTM trên 4 tập, 3–5 seed | File dự đoán và log của mọi lần chạy |
-| 4 | Lập bảng so sánh tổng hợp (ba mô hình chính, GTS, baseline trích số), kiểm định ý nghĩa thống kê giữa các mô hình chính, và bảng chi phí | Hai bảng hoàn chỉnh, có trung bình và độ lệch chuẩn; kết quả kiểm định |
+| 4 | Lập bảng so sánh tổng hợp (ba mô hình chính, GTS, hai baseline không dùng học sâu, baseline trích số), kiểm định ý nghĩa thống kê giữa các mô hình chính, và bảng chi phí | Hai bảng hoàn chỉnh, có trung bình và độ lệch chuẩn; kết quả kiểm định |
 | 5 | Giải thích lỗi của EMC-GCN và GTS; nếu còn thời gian, thử thay backbone lớn hơn | Phần phân tích lỗi của hướng gán nhãn lưới |
 | 6 | Viết phần phương pháp và kết quả của EMC-GCN, GTS | Các mục báo cáo tương ứng |
 
@@ -61,8 +61,8 @@ Nếu đến hết tuần 1 vẫn chưa dựng được môi trường AllenNLP,
 |---|---|---|
 | 1 | Tải ASTE-Data-V2 bản gốc, viết `convert.py` cho từng format đích và script kiểm tra số câu, số bộ ba; đưa dữ liệu lên Kaggle Dataset chung của nhóm | Dữ liệu đã chuyển format cho cả bốn repo, script kiểm tra chạy đạt |
 | 2 | Viết script đánh giá chung (xem mục 4); gom số baseline từ paper Span-ASTE và EMC-GCN, đánh dấu nguồn | Script trong `eval/`; bảng số baseline có trích nguồn |
-| 3 | Chấm mọi file dự đoán đã có bằng script chung; chạy hộ seed cho C nếu cần; đối chiếu số câu và F1 công bố với paper | Bảng reproduce được điền dần; danh sách số liệu đã đối chiếu |
-| 4 | Chuẩn bị DMASTE: tải, lọc, chuyển format; viết baseline dựa trên luật nếu giảng viên yêu cầu | Dữ liệu DMASTE sẵn sàng; baseline luật (nếu cần) |
+| 3 | Chấm mọi file dự đoán đã có bằng script chung; chạy hộ seed cho C nếu cần; đối chiếu số câu và F1 công bố với paper; viết baseline luật cú pháp + từ điển (Double Propagation, xem mục 2.3 của kế hoạch) | Bảng reproduce được điền dần; danh sách số liệu đã đối chiếu; file dự đoán của baseline luật trên 4 tập |
+| 4 | Viết baseline CRF + hồi quy logistic, chạy 3–5 seed trên 4 tập; chuẩn bị DMASTE: tải, lọc, chuyển format | File dự đoán của baseline CRF; dữ liệu DMASTE sẵn sàng |
 | 5 | Chạy ba mô hình đã huấn luyện trên DMASTE cùng A, B, C; lập bảng sụt giảm F1 | Kết quả khác miền |
 | 6 | Ghép báo cáo, thống nhất bảng biểu và văn phong; dọn repo, viết README và hướng dẫn chạy lại | Báo cáo hoàn chỉnh, repo sạch |
 
@@ -112,5 +112,5 @@ Nếu đến hết tuần 1 vẫn chưa dựng được môi trường AllenNLP,
 
 - Điền tên thật cho A, B, C, D.
 - Hạn nộp, để chỉnh lại cột "Tuần".
-- Giảng viên hiểu "phương pháp truyền thống" theo nghĩa nào; nếu gồm phương pháp không dùng học sâu thì D làm baseline dựa trên luật ở tuần 4.
+- Nhóm đã quyết định thêm hai baseline không dùng học sâu (luật, CRF); vẫn nên báo giảng viên khi nộp danh sách paper.
 - Nhóm đồng ý thay BARTABSA bằng EMC-GCN và nộp danh sách paper để duyệt trước khi cài đặt.

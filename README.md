@@ -10,6 +10,7 @@ Mọi mô hình được fine-tune từ backbone pretrained (`bert-base-uncased`
 docs/       bối cảnh đề bài, kế hoạch triển khai, phân công
 data/       ASTE-Data-V2 gốc và script kiểm tra dữ liệu
 models/     mã nguồn của tác giả (mỗi mô hình một thư mục)
+baselines/  baseline không dùng học sâu do nhóm tự viết (luật, CRF)
 notebooks/  notebook huấn luyện trên Kaggle
 eval/       script đánh giá chung, phân tích lỗi
 results/    log, file dự đoán (results/preds/{mô hình}/{tập}/seed{n}.jsonl), runs.csv

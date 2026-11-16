@@ -61,7 +61,21 @@ Số của các baseline trên ASTE-Data-V2 lấy từ bảng kết quả trong 
 
 Paper gốc của Peng et al. báo cáo trên bản dữ liệu V1. Số của nhóm baseline pipeline trên V2 là do Xu et al. 2020 (paper JET, cũng là paper công bố ASTE-Data-V2) chạy lại, nên khi trích phải dẫn nguồn là bảng trong các paper sau, không dẫn paper gốc.
 
-**Baseline không dùng học sâu (chờ giảng viên trả lời):** mọi baseline ở bảng trên đều là mạng nơ-ron. Nếu giảng viên hiểu "phương pháp truyền thống" là phương pháp không dùng học sâu, nhóm bổ sung một baseline dựa trên luật: dùng cây cú pháp phụ thuộc để lấy danh từ làm khía cạnh và tính từ liên kết với nó làm ý kiến, rồi tra cảm xúc từ một từ điển cảm xúc. D phụ trách, làm ở tuần 4.
+### 2.3. Baseline không dùng học sâu
+
+Mọi baseline ở mục 2.2 đều là mạng nơ-ron. Nhóm bổ sung hai phương pháp không dùng học sâu, đại diện cho hai lối tiếp cận cổ điển, để có mốc dưới cho bảng so sánh:
+
+| Baseline | Nguồn | Hướng | Cách làm | Huấn luyện |
+|---|---|---|---|---|
+| Luật cú pháp + từ điển | Double Propagation ([Qiu et al., Computational Linguistics 2011](https://aclanthology.org/J11-1002)); từ điển cảm xúc [Hu & Liu, KDD 2004](https://www.cs.uic.edu/~liub/FBS/sentiment-analysis.html) | Dựa trên luật | Dùng luật trên cây cú pháp phụ thuộc để trích đồng thời khía cạnh (danh từ, cụm danh từ) và ý kiến (tính từ, động từ đánh giá) có quan hệ với nhau; cảm xúc lấy từ từ điển, đảo dấu khi có từ phủ định | Không; chỉ dùng tập train để thống kê và tinh chỉnh luật |
+| CRF + hồi quy logistic | Tự cài đặt theo lối pipeline cổ điển, dùng `sklearn-crfsuite` và `scikit-learn` | Học máy với đặc trưng thủ công | (1) CRF gán nhãn BIO cho khía cạnh và ý kiến, đặc trưng gồm từ, từ loại, hậu tố, từ lân cận, nhãn quan hệ phụ thuộc, từ có trong từ điển cảm xúc; (2) hồi quy logistic quyết định cặp khía cạnh – ý kiến nào đi với nhau (khoảng cách, độ dài đường đi trên cây cú pháp, từ loại); (3) hồi quy logistic phân loại cảm xúc của cặp | Có, trên CPU, vài phút mỗi tập |
+
+Ghi chú:
+
+- Không cần tự phân tích cú pháp: dữ liệu D2 của EMC-GCN đã có sẵn từ loại, đầu phụ thuộc và nhãn quan hệ cho đúng các từ của ASTE-Data-V2. Cả hai baseline dùng lại phần này.
+- Hai baseline do nhóm tự cài đặt, không có số công bố trên ASTE-Data-V2 để đối chiếu. Báo cáo phải ghi rõ đây là cài đặt của nhóm, không phải phương pháp được dựng lại.
+- Đầu ra theo cùng format file dự đoán chung và chấm bằng cùng script đánh giá. Baseline luật không có tính ngẫu nhiên nên chỉ chạy một lần; baseline CRF chạy 3–5 seed như các mô hình khác.
+- Mã đặt trong `baselines/`. D phụ trách: baseline luật ở tuần 3, baseline CRF ở tuần 4.
 
 ## 3. Dữ liệu
 
@@ -147,7 +161,7 @@ Các nguyên nhân chênh lệch thường gặp cần kiểm tra: khác seed, k
 
 - [ ] Viết một script đánh giá chung: đưa đầu ra của mọi mô hình về cùng dạng tập bộ ba cho mỗi câu, rồi tính P, R, F1 (đúng khi khớp chính xác cả ba phần tử).
 - [ ] Lưu ý: MvP so khớp trên văn bản, các mô hình còn lại so khớp trên chỉ số. Bảng so sánh chính dùng một cách chung cho mọi mô hình: so trên văn bản đã chuẩn hóa chữ thường. Cách này lỏng hơn so trên chỉ số (một từ lặp lại trong câu vẫn được tính đúng), nên với các mô hình có chỉ số phải báo cáo thêm F1 so trên chỉ số, để thấy chênh lệch do cách so khớp và để đối chiếu với số công bố.
-- [ ] Lập bảng tổng hợp: ba mô hình chính, GTS tự chạy, baseline trích số. Báo cáo trung bình ± độ lệch chuẩn qua các seed.
+- [ ] Lập bảng tổng hợp: ba mô hình chính, GTS tự chạy, hai baseline không dùng học sâu, baseline trích số. Báo cáo trung bình ± độ lệch chuẩn qua các seed.
 - [ ] Kiểm định ý nghĩa thống kê giữa các cặp mô hình chính (ví dụ paired bootstrap trên tập test). Các mô hình chỉ cách nhau 1–3 điểm F1 trên tập test nhỏ, nên chỉ kết luận mô hình nào tốt hơn khi chênh lệch có ý nghĩa.
 - [ ] Lập bảng chi phí: số tham số, thời gian huấn luyện, thời gian suy luận mỗi câu, phần cứng. Mọi số đo thời gian lấy trên cùng một loại GPU (T4). Với MvP, đo riêng thời gian suy luận theo số góc nhìn, vì mô hình sinh kết quả cho từng góc nhìn rồi mới bỏ phiếu.
 - [ ] Nêu rõ khác biệt backbone (BERT-base khoảng 110M, T5-base khoảng 220M tham số) khi kết luận.
@@ -187,9 +201,11 @@ Các nguyên nhân chênh lệch thường gặp cần kiểm tra: khác seed, k
 ## 6. Cấu trúc repo của nhóm
 
 ```
-aste-comparison/
-├── data/            # dữ liệu gốc và script chuyển format
-├── models/          # mỗi mô hình một thư mục (fork từ repo tác giả)
+aste-int3406/
+├── docs/            # bối cảnh, kế hoạch, phân công
+├── data/            # ASTE-Data-V2 gốc và script kiểm tra dữ liệu
+├── models/          # mỗi mô hình một thư mục (mã của tác giả, copy vào repo nhóm)
+├── baselines/       # hai baseline không dùng học sâu do nhóm tự viết
 ├── notebooks/       # notebook huấn luyện trên Kaggle
 ├── eval/            # script đánh giá chung, phân tích lỗi
 ├── results/         # log, file dự đoán, bảng kết quả
@@ -227,7 +243,7 @@ aste-comparison/
 | A | EMC-GCN và GTS | Bảng so sánh tổng hợp, bảng chi phí |
 | B | Span-ASTE | Chủ trì phân tích lỗi |
 | C | MvP | Demo Gradio, thử nghiệm số góc nhìn của MvP |
-| D | Dữ liệu, script chuyển format, script đánh giá chung, gom số baseline | DMASTE, baseline dựa trên luật (nếu giảng viên yêu cầu), tổng hợp báo cáo |
+| D | Dữ liệu, script chuyển format, script đánh giá chung, gom số baseline | Hai baseline không dùng học sâu, DMASTE, tổng hợp báo cáo |
 
 Mỗi người viết phần báo cáo của mô hình mình phụ trách và tự giải thích lỗi của mô hình đó; D ghép và thống nhất báo cáo.
 
