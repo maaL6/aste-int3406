@@ -1,0 +1,9 @@
+commit: ?
+python 3.13.16 torch 2.11.0+cu130 transformers 5.23.0 gpu Tesla T4
+Evaluation on testset:
+Aspect term	P:0.74000	R:0.77083	F1:0.75510
+Opinion term	P:0.77629	R:0.75435	F1:0.76516
+triplet	P:0.64939	R:0.43918	F1:0.52399
+
+predictions saved to /kaggle/working/results/preds/gts-bilstm/15res/seed1.jsonl
+stats: {"ms_moi_cau": 1.2979574085022352, "test_f1_repo": 52.398523985239855}

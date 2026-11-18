@@ -39,7 +39,7 @@ class MultiInferRNNModel(torch.nn.Module):
         return embedding
 
     def _lstm_feature(self, embedding, lengths):
-        embedding = pack_padded_sequence(embedding, lengths, batch_first=True)
+        embedding = pack_padded_sequence(embedding, lengths.cpu(), batch_first=True)
         context, _ = self.bilstm(embedding)
         context, _ = pad_packed_sequence(context, batch_first=True)
         return context

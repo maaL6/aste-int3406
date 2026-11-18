@@ -1,0 +1,526 @@
+commit: ?
+python 3.13.5 torch 2.15.0+cu132 transformers 5.23.0 gpu NVIDIA H100 80GB HBM3
+[transformers] [1mBertModel LOAD REPORT[0m from: bert-base-uncased
+Key                                        | Status     |  | 
+-------------------------------------------+------------+--+-
+cls.predictions.transform.LayerNorm.weight | UNEXPECTED |  | 
+cls.seq_relationship.bias                  | UNEXPECTED |  | 
+cls.predictions.bias                       | UNEXPECTED |  | 
+cls.seq_relationship.weight                | UNEXPECTED |  | 
+cls.predictions.transform.LayerNorm.bias   | UNEXPECTED |  | 
+cls.predictions.transform.dense.weight     | UNEXPECTED |  | 
+cls.predictions.transform.dense.bias       | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+Epoch:0
+Aspect term	P:0.00000	R:0.00000	F1:0.00000
+Opinion term	P:0.00000	R:0.00000	F1:0.00000
+triplet	P:0.00000	R:0.00000	F1:0.00000
+
+Epoch:1
+Aspect term	P:0.00000	R:0.00000	F1:0.00000
+Opinion term	P:0.00000	R:0.00000	F1:0.00000
+triplet	P:0.00000	R:0.00000	F1:0.00000
+
+Epoch:2
+Aspect term	P:0.00000	R:0.00000	F1:0.00000
+Opinion term	P:0.00000	R:0.00000	F1:0.00000
+triplet	P:0.00000	R:0.00000	F1:0.00000
+
+Epoch:3
+Aspect term	P:0.36275	R:0.17371	F1:0.23492
+Opinion term	P:0.00000	R:0.00000	F1:0.00000
+triplet	P:0.00000	R:0.00000	F1:0.00000
+
+Epoch:4
+Aspect term	P:0.49180	R:0.14085	F1:0.21898
+Opinion term	P:1.00000	R:0.00424	F1:0.00844
+triplet	P:0.00000	R:0.00000	F1:0.00000
+
+Epoch:5
+Aspect term	P:0.63200	R:0.37089	F1:0.46746
+Opinion term	P:0.80000	R:0.22034	F1:0.34551
+triplet	P:0.68421	R:0.05221	F1:0.09701
+
+Epoch:6
+Aspect term	P:0.75978	R:0.63850	F1:0.69388
+Opinion term	P:0.78112	R:0.77119	F1:0.77612
+triplet	P:0.62500	R:0.12048	F1:0.20202
+
+Epoch:7
+Aspect term	P:0.70342	R:0.86854	F1:0.77731
+Opinion term	P:0.71375	R:0.81356	F1:0.76040
+triplet	P:0.38889	R:0.28112	F1:0.32634
+
+Epoch:8
+Aspect term	P:0.79793	R:0.72300	F1:0.75862
+Opinion term	P:0.81416	R:0.77966	F1:0.79654
+triplet	P:0.64000	R:0.06426	F1:0.11679
+
+Epoch:9
+Aspect term	P:0.79500	R:0.74648	F1:0.76998
+Opinion term	P:0.83425	R:0.63983	F1:0.72422
+triplet	P:0.68478	R:0.25301	F1:0.36950
+
+Epoch:10
+Aspect term	P:0.82609	R:0.80282	F1:0.81429
+Opinion term	P:0.79237	R:0.79237	F1:0.79237
+triplet	P:0.75652	R:0.34940	F1:0.47802
+
+Epoch:11
+Aspect term	P:0.80088	R:0.84977	F1:0.82460
+Opinion term	P:0.80556	R:0.86017	F1:0.83197
+triplet	P:0.65839	R:0.42570	F1:0.51707
+
+Epoch:12
+Aspect term	P:0.80000	R:0.86385	F1:0.83070
+Opinion term	P:0.78992	R:0.79661	F1:0.79325
+triplet	P:0.67939	R:0.35743	F1:0.46842
+
+Epoch:13
+Aspect term	P:0.79149	R:0.87324	F1:0.83036
+Opinion term	P:0.80567	R:0.84322	F1:0.82402
+triplet	P:0.69444	R:0.40161	F1:0.50891
+
+Epoch:14
+Aspect term	P:0.78903	R:0.87793	F1:0.83111
+Opinion term	P:0.77122	R:0.88559	F1:0.82446
+triplet	P:0.64583	R:0.49799	F1:0.56236
+
+Epoch:15
+Aspect term	P:0.79741	R:0.86854	F1:0.83146
+Opinion term	P:0.79151	R:0.86864	F1:0.82828
+triplet	P:0.65672	R:0.53012	F1:0.58667
+
+Epoch:16
+Aspect term	P:0.80172	R:0.87324	F1:0.83596
+Opinion term	P:0.79116	R:0.83475	F1:0.81237
+triplet	P:0.68528	R:0.54217	F1:0.60538
+
+Epoch:17
+Aspect term	P:0.82326	R:0.83099	F1:0.82710
+Opinion term	P:0.77647	R:0.83898	F1:0.80652
+triplet	P:0.71023	R:0.50201	F1:0.58824
+
+Epoch:18
+Aspect term	P:0.80631	R:0.84038	F1:0.82299
+Opinion term	P:0.79528	R:0.85593	F1:0.82449
+triplet	P:0.73514	R:0.54618	F1:0.62673
+
+Epoch:19
+Aspect term	P:0.79476	R:0.85446	F1:0.82353
+Opinion term	P:0.77068	R:0.86864	F1:0.81673
+triplet	P:0.66055	R:0.57831	F1:0.61670
+
+Epoch:20
+Aspect term	P:0.79828	R:0.87324	F1:0.83408
+Opinion term	P:0.77154	R:0.87288	F1:0.81909
+triplet	P:0.64629	R:0.59438	F1:0.61925
+
+Epoch:21
+Aspect term	P:0.81818	R:0.84507	F1:0.83141
+Opinion term	P:0.77519	R:0.84746	F1:0.80972
+triplet	P:0.75275	R:0.55020	F1:0.63573
+
+Epoch:22
+Aspect term	P:0.81057	R:0.86385	F1:0.83636
+Opinion term	P:0.77820	R:0.87712	F1:0.82470
+triplet	P:0.76963	R:0.59036	F1:0.66818
+
+Epoch:23
+Aspect term	P:0.79237	R:0.87793	F1:0.83296
+Opinion term	P:0.74048	R:0.90678	F1:0.81524
+triplet	P:0.68201	R:0.65462	F1:0.66803
+
+Epoch:24
+Aspect term	P:0.80687	R:0.88263	F1:0.84305
+Opinion term	P:0.77186	R:0.86017	F1:0.81363
+triplet	P:0.67105	R:0.61446	F1:0.64151
+
+Epoch:25
+Aspect term	P:0.81778	R:0.86385	F1:0.84018
+Opinion term	P:0.75676	R:0.83051	F1:0.79192
+triplet	P:0.72596	R:0.60643	F1:0.66083
+
+Epoch:26
+Aspect term	P:0.80342	R:0.88263	F1:0.84116
+Opinion term	P:0.76136	R:0.85169	F1:0.80400
+triplet	P:0.69397	R:0.64659	F1:0.66944
+
+Epoch:27
+Aspect term	P:0.80435	R:0.86854	F1:0.83521
+Opinion term	P:0.76448	R:0.83898	F1:0.80000
+triplet	P:0.73113	R:0.62249	F1:0.67245
+
+Epoch:28
+Aspect term	P:0.82096	R:0.88263	F1:0.85068
+Opinion term	P:0.75465	R:0.86017	F1:0.80396
+triplet	P:0.68750	R:0.61847	F1:0.65116
+
+Epoch:29
+Aspect term	P:0.79668	R:0.90141	F1:0.84581
+Opinion term	P:0.75926	R:0.86864	F1:0.81028
+triplet	P:0.68981	R:0.59839	F1:0.64086
+
+Epoch:30
+Aspect term	P:0.80952	R:0.87793	F1:0.84234
+Opinion term	P:0.77647	R:0.83898	F1:0.80652
+triplet	P:0.68354	R:0.65060	F1:0.66667
+
+Epoch:31
+Aspect term	P:0.80342	R:0.88263	F1:0.84116
+Opinion term	P:0.78629	R:0.82627	F1:0.80579
+triplet	P:0.71831	R:0.61446	F1:0.66234
+
+Epoch:32
+Aspect term	P:0.80335	R:0.90141	F1:0.84956
+Opinion term	P:0.77778	R:0.86017	F1:0.81690
+triplet	P:0.71250	R:0.68675	F1:0.69939
+
+Epoch:33
+Aspect term	P:0.79668	R:0.90141	F1:0.84581
+Opinion term	P:0.77606	R:0.85169	F1:0.81212
+triplet	P:0.72146	R:0.63454	F1:0.67521
+
+Epoch:34
+Aspect term	P:0.79915	R:0.87793	F1:0.83669
+Opinion term	P:0.76448	R:0.83898	F1:0.80000
+triplet	P:0.68831	R:0.63855	F1:0.66250
+
+Epoch:35
+Aspect term	P:0.78512	R:0.89202	F1:0.83516
+Opinion term	P:0.74632	R:0.86017	F1:0.79921
+triplet	P:0.67241	R:0.62651	F1:0.64865
+
+Epoch:36
+Aspect term	P:0.78723	R:0.86854	F1:0.82589
+Opinion term	P:0.75746	R:0.86017	F1:0.80556
+triplet	P:0.71930	R:0.65863	F1:0.68763
+
+Epoch:37
+Aspect term	P:0.78723	R:0.86854	F1:0.82589
+Opinion term	P:0.77344	R:0.83898	F1:0.80488
+triplet	P:0.72000	R:0.65060	F1:0.68354
+
+Epoch:38
+Aspect term	P:0.79399	R:0.86854	F1:0.82960
+Opinion term	P:0.77043	R:0.83898	F1:0.80325
+triplet	P:0.66809	R:0.63052	F1:0.64876
+
+Epoch:39
+Aspect term	P:0.78151	R:0.87324	F1:0.82483
+Opinion term	P:0.76923	R:0.84746	F1:0.80645
+triplet	P:0.65546	R:0.62651	F1:0.64066
+
+Epoch:40
+Aspect term	P:0.79310	R:0.86385	F1:0.82697
+Opinion term	P:0.76806	R:0.85593	F1:0.80962
+triplet	P:0.68122	R:0.62651	F1:0.65272
+
+Epoch:41
+Aspect term	P:0.79237	R:0.87793	F1:0.83296
+Opinion term	P:0.77358	R:0.86864	F1:0.81836
+triplet	P:0.68559	R:0.63052	F1:0.65690
+
+Epoch:42
+Aspect term	P:0.80342	R:0.88263	F1:0.84116
+Opinion term	P:0.79134	R:0.85169	F1:0.82041
+triplet	P:0.72000	R:0.65060	F1:0.68354
+
+Epoch:43
+Aspect term	P:0.80087	R:0.86854	F1:0.83333
+Opinion term	P:0.78486	R:0.83475	F1:0.80903
+triplet	P:0.73611	R:0.63855	F1:0.68387
+
+Epoch:44
+Aspect term	P:0.78992	R:0.88263	F1:0.83370
+Opinion term	P:0.75458	R:0.87288	F1:0.80943
+triplet	P:0.70000	R:0.64659	F1:0.67223
+
+Epoch:45
+Aspect term	P:0.78814	R:0.87324	F1:0.82851
+Opinion term	P:0.77099	R:0.85593	F1:0.81124
+triplet	P:0.70852	R:0.63454	F1:0.66949
+
+Epoch:46
+Aspect term	P:0.77731	R:0.86854	F1:0.82040
+Opinion term	P:0.75926	R:0.86864	F1:0.81028
+triplet	P:0.70386	R:0.65863	F1:0.68050
+
+Epoch:47
+Aspect term	P:0.79828	R:0.87324	F1:0.83408
+Opinion term	P:0.77992	R:0.85593	F1:0.81616
+triplet	P:0.72770	R:0.62249	F1:0.67100
+
+Epoch:48
+Aspect term	P:0.79747	R:0.88732	F1:0.84000
+Opinion term	P:0.75735	R:0.87288	F1:0.81102
+triplet	P:0.70711	R:0.67871	F1:0.69262
+
+Epoch:49
+Aspect term	P:0.79325	R:0.88263	F1:0.83556
+Opinion term	P:0.78824	R:0.85169	F1:0.81874
+triplet	P:0.70175	R:0.64257	F1:0.67086
+
+Epoch:50
+Aspect term	P:0.80952	R:0.87793	F1:0.84234
+Opinion term	P:0.79134	R:0.85169	F1:0.82041
+triplet	P:0.75349	R:0.65060	F1:0.69828
+
+Epoch:51
+Aspect term	P:0.80603	R:0.87793	F1:0.84045
+Opinion term	P:0.78544	R:0.86864	F1:0.82495
+triplet	P:0.74057	R:0.63052	F1:0.68113
+
+Epoch:52
+Aspect term	P:0.80349	R:0.86385	F1:0.83258
+Opinion term	P:0.77154	R:0.87288	F1:0.81909
+triplet	P:0.73488	R:0.63454	F1:0.68103
+
+Epoch:53
+Aspect term	P:0.79399	R:0.86854	F1:0.82960
+Opinion term	P:0.77358	R:0.86864	F1:0.81836
+triplet	P:0.73023	R:0.63052	F1:0.67672
+
+Epoch:54
+Aspect term	P:0.80342	R:0.88263	F1:0.84116
+Opinion term	P:0.79297	R:0.86017	F1:0.82520
+triplet	P:0.75117	R:0.64257	F1:0.69264
+
+Epoch:55
+Aspect term	P:0.80342	R:0.88263	F1:0.84116
+Opinion term	P:0.78378	R:0.86017	F1:0.82020
+triplet	P:0.74884	R:0.64659	F1:0.69397
+
+Epoch:56
+Aspect term	P:0.79412	R:0.88732	F1:0.83814
+Opinion term	P:0.78244	R:0.86864	F1:0.82329
+triplet	P:0.71171	R:0.63454	F1:0.67091
+
+Epoch:57
+Aspect term	P:0.80426	R:0.88732	F1:0.84375
+Opinion term	P:0.77528	R:0.87712	F1:0.82306
+triplet	P:0.70614	R:0.64659	F1:0.67505
+
+Epoch:58
+Aspect term	P:0.81068	R:0.78404	F1:0.79714
+Opinion term	P:0.78740	R:0.84746	F1:0.81633
+triplet	P:0.74384	R:0.60643	F1:0.66814
+
+Epoch:59
+Aspect term	P:0.82653	R:0.76056	F1:0.79218
+Opinion term	P:0.79828	R:0.78814	F1:0.79318
+triplet	P:0.74603	R:0.56627	F1:0.64384
+
+Epoch:60
+Aspect term	P:0.79039	R:0.84977	F1:0.81900
+Opinion term	P:0.77395	R:0.85593	F1:0.81288
+triplet	P:0.70721	R:0.63052	F1:0.66667
+
+Epoch:61
+Aspect term	P:0.78926	R:0.89671	F1:0.83956
+Opinion term	P:0.78244	R:0.86864	F1:0.82329
+triplet	P:0.73128	R:0.66667	F1:0.69748
+
+Epoch:62
+Aspect term	P:0.76892	R:0.90610	F1:0.83190
+Opinion term	P:0.78626	R:0.87288	F1:0.82731
+triplet	P:0.70000	R:0.67470	F1:0.68712
+
+Epoch:63
+Aspect term	P:0.76327	R:0.87793	F1:0.81659
+Opinion term	P:0.76866	R:0.87288	F1:0.81746
+triplet	P:0.64961	R:0.66265	F1:0.65606
+
+Epoch:64
+Aspect term	P:0.77215	R:0.85915	F1:0.81333
+Opinion term	P:0.76384	R:0.87712	F1:0.81657
+triplet	P:0.64528	R:0.68675	F1:0.66537
+
+Epoch:65
+Aspect term	P:0.76735	R:0.88263	F1:0.82096
+Opinion term	P:0.72632	R:0.87712	F1:0.79463
+triplet	P:0.57807	R:0.69880	F1:0.63273
+
+Epoch:66
+Aspect term	P:0.78008	R:0.88263	F1:0.82819
+Opinion term	P:0.76103	R:0.87712	F1:0.81496
+triplet	P:0.58020	R:0.68273	F1:0.62731
+
+Epoch:67
+Aspect term	P:0.74118	R:0.88732	F1:0.80769
+Opinion term	P:0.73118	R:0.86441	F1:0.79223
+triplet	P:0.56949	R:0.67470	F1:0.61765
+
+Epoch:68
+Aspect term	P:0.79060	R:0.86854	F1:0.82774
+Opinion term	P:0.76779	R:0.86864	F1:0.81511
+triplet	P:0.65041	R:0.64257	F1:0.64646
+
+Epoch:69
+Aspect term	P:0.80000	R:0.88263	F1:0.83929
+Opinion term	P:0.79167	R:0.80508	F1:0.79832
+triplet	P:0.68919	R:0.61446	F1:0.64968
+
+Epoch:70
+Aspect term	P:0.80591	R:0.89671	F1:0.84889
+Opinion term	P:0.78656	R:0.84322	F1:0.81391
+triplet	P:0.72368	R:0.66265	F1:0.69182
+
+Epoch:71
+Aspect term	P:0.80252	R:0.89671	F1:0.84701
+Opinion term	P:0.78689	R:0.81356	F1:0.80000
+triplet	P:0.71111	R:0.64257	F1:0.67511
+
+Epoch:72
+Aspect term	P:0.79592	R:0.91549	F1:0.85153
+Opinion term	P:0.74818	R:0.86864	F1:0.80392
+triplet	P:0.66667	R:0.67470	F1:0.67066
+
+Epoch:73
+Aspect term	P:0.81498	R:0.86854	F1:0.84091
+Opinion term	P:0.77510	R:0.81780	F1:0.79588
+triplet	P:0.68122	R:0.62651	F1:0.65272
+
+Epoch:74
+Aspect term	P:0.80932	R:0.89671	F1:0.85078
+Opinion term	P:0.74074	R:0.84746	F1:0.79051
+triplet	P:0.66800	R:0.67068	F1:0.66934
+
+Epoch:75
+Aspect term	P:0.80258	R:0.87793	F1:0.83857
+Opinion term	P:0.76154	R:0.83898	F1:0.79839
+triplet	P:0.65447	R:0.64659	F1:0.65051
+
+Epoch:76
+Aspect term	P:0.78125	R:0.82160	F1:0.80092
+Opinion term	P:0.76772	R:0.82627	F1:0.79592
+triplet	P:0.69712	R:0.58233	F1:0.63457
+
+Epoch:77
+Aspect term	P:0.75102	R:0.86385	F1:0.80349
+Opinion term	P:0.79268	R:0.82627	F1:0.80913
+triplet	P:0.65823	R:0.62651	F1:0.64198
+
+Epoch:78
+Aspect term	P:0.74400	R:0.87324	F1:0.80346
+Opinion term	P:0.77519	R:0.84746	F1:0.80972
+triplet	P:0.67194	R:0.68273	F1:0.67729
+
+Epoch:79
+Aspect term	P:0.75510	R:0.86854	F1:0.80786
+Opinion term	P:0.76296	R:0.87288	F1:0.81423
+triplet	P:0.65134	R:0.68273	F1:0.66667
+
+Epoch:80
+Aspect term	P:0.77119	R:0.85446	F1:0.81069
+Opinion term	P:0.80237	R:0.86017	F1:0.83027
+triplet	P:0.67901	R:0.66265	F1:0.67073
+
+Epoch:81
+Aspect term	P:0.77637	R:0.86385	F1:0.81778
+Opinion term	P:0.78544	R:0.86864	F1:0.82495
+triplet	P:0.69421	R:0.67470	F1:0.68432
+
+Epoch:82
+Aspect term	P:0.78696	R:0.84977	F1:0.81716
+Opinion term	P:0.79592	R:0.82627	F1:0.81081
+triplet	P:0.72197	R:0.64659	F1:0.68220
+
+Epoch:83
+Aspect term	P:0.79565	R:0.85915	F1:0.82619
+Opinion term	P:0.80498	R:0.82203	F1:0.81342
+triplet	P:0.71806	R:0.65462	F1:0.68487
+
+Epoch:84
+Aspect term	P:0.79654	R:0.86385	F1:0.82883
+Opinion term	P:0.79918	R:0.82627	F1:0.81250
+triplet	P:0.72687	R:0.66265	F1:0.69328
+
+Epoch:85
+Aspect term	P:0.78632	R:0.86385	F1:0.82327
+Opinion term	P:0.79592	R:0.82627	F1:0.81081
+triplet	P:0.70870	R:0.65462	F1:0.68058
+
+Epoch:86
+Aspect term	P:0.75417	R:0.84977	F1:0.79912
+Opinion term	P:0.79675	R:0.83051	F1:0.81328
+triplet	P:0.67355	R:0.65462	F1:0.66395
+
+Epoch:87
+Aspect term	P:0.76210	R:0.88732	F1:0.81996
+Opinion term	P:0.78599	R:0.85593	F1:0.81947
+triplet	P:0.68127	R:0.68675	F1:0.68400
+
+Epoch:88
+Aspect term	P:0.79399	R:0.86854	F1:0.82960
+Opinion term	P:0.79352	R:0.83051	F1:0.81159
+triplet	P:0.71930	R:0.65863	F1:0.68763
+
+Epoch:89
+Aspect term	P:0.78661	R:0.88263	F1:0.83186
+Opinion term	P:0.80321	R:0.84746	F1:0.82474
+triplet	P:0.68619	R:0.65863	F1:0.67213
+
+Epoch:90
+Aspect term	P:0.77642	R:0.89671	F1:0.83224
+Opinion term	P:0.78295	R:0.85593	F1:0.81781
+triplet	P:0.69672	R:0.68273	F1:0.68966
+
+Epoch:91
+Aspect term	P:0.79221	R:0.85915	F1:0.82432
+Opinion term	P:0.80165	R:0.82203	F1:0.81172
+triplet	P:0.70996	R:0.65863	F1:0.68333
+
+Epoch:92
+Aspect term	P:0.78541	R:0.85915	F1:0.82063
+Opinion term	P:0.78947	R:0.82627	F1:0.80745
+triplet	P:0.70085	R:0.65863	F1:0.67909
+
+Epoch:93
+Aspect term	P:0.76955	R:0.87793	F1:0.82018
+Opinion term	P:0.78125	R:0.84746	F1:0.81301
+triplet	P:0.68852	R:0.67470	F1:0.68154
+
+Epoch:94
+Aspect term	P:0.78059	R:0.86854	F1:0.82222
+Opinion term	P:0.78968	R:0.84322	F1:0.81557
+triplet	P:0.69492	R:0.65863	F1:0.67629
+
+Epoch:95
+Aspect term	P:0.78723	R:0.86854	F1:0.82589
+Opinion term	P:0.79200	R:0.83898	F1:0.81481
+triplet	P:0.69874	R:0.67068	F1:0.68443
+
+Epoch:96
+Aspect term	P:0.77459	R:0.88732	F1:0.82713
+Opinion term	P:0.76208	R:0.86864	F1:0.81188
+triplet	P:0.66926	R:0.69076	F1:0.67984
+
+Epoch:97
+Aspect term	P:0.77959	R:0.89671	F1:0.83406
+Opinion term	P:0.76136	R:0.85169	F1:0.80400
+triplet	P:0.68273	R:0.68273	F1:0.68273
+
+Epoch:98
+Aspect term	P:0.81938	R:0.87324	F1:0.84545
+Opinion term	P:0.80083	R:0.81780	F1:0.80922
+triplet	P:0.72124	R:0.65462	F1:0.68632
+
+Epoch:99
+Aspect term	P:0.76210	R:0.88732	F1:0.81996
+Opinion term	P:0.79297	R:0.86017	F1:0.82520
+triplet	P:0.68182	R:0.66265	F1:0.67210
+
+best epoch: 32	best dev triplet f1: 0.69939
+
+
+stats: {"phut_train": 8.634118684132893, "trieu_tham_so": 111.879942, "mb_gpu": 10973.98779296875, "dev_f1": 69.93865030674846, "best_epoch": 32}
+Evaluation on testset:
+Aspect term	P:0.75579	R:0.83102	F1:0.79162
+Opinion term	P:0.73559	R:0.80435	F1:0.76843
+triplet	P:0.61451	R:0.55876	F1:0.58531
+
+predictions saved to /home/nvidia/aste-d/results/preds/gts-bert/15res/seed0.jsonl
+stats: {"phut_train": 8.634118684132893, "trieu_tham_so": 111.879942, "mb_gpu": 10973.98779296875, "dev_f1": 69.93865030674846, "best_epoch": 32, "ms_moi_cau": 2.1387338638305664, "test_f1_repo": 58.531317494600444}

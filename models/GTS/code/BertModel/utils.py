@@ -114,9 +114,18 @@ class Metric():
                     sentiment = 3
                 if sentiment == -1:
                     print('wrong!!!!!!!!!!!!!!!!!!!!')
-                    input()
                 triplets.append([al, ar, pl, pr, sentiment])
         return triplets
+
+    def predicted_tuples(self):
+        """Bộ ba (hoặc cặp) dự đoán của từng câu, theo đúng thứ tự mô hình đã đọc."""
+        find = self.find_pair if self.args.task == 'pair' else self.find_triplet
+        all_tuples = []
+        for i in range(self.data_num):
+            aspect_spans = self.get_spans(self.predictions[i], self.sen_lengths[i], self.tokens_ranges[i], 1)
+            opinion_spans = self.get_spans(self.predictions[i], self.sen_lengths[i], self.tokens_ranges[i], 2)
+            all_tuples.append(find(self.predictions[i], aspect_spans, opinion_spans, self.tokens_ranges[i]))
+        return all_tuples
 
     def score_aspect(self):
         assert len(self.predictions) == len(self.goldens)

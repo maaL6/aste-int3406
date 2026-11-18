@@ -74,7 +74,7 @@ Ghi chú:
 
 - Không cần tự phân tích cú pháp: dữ liệu D2 của EMC-GCN đã có sẵn từ loại, đầu phụ thuộc và nhãn quan hệ cho đúng các từ của ASTE-Data-V2. Cả hai baseline dùng lại phần này.
 - Hai baseline do nhóm tự cài đặt, không có số công bố trên ASTE-Data-V2 để đối chiếu. Báo cáo phải ghi rõ đây là cài đặt của nhóm, không phải phương pháp được dựng lại.
-- Đầu ra theo cùng format file dự đoán chung và chấm bằng cùng script đánh giá. Baseline luật không có tính ngẫu nhiên nên chỉ chạy một lần; baseline CRF chạy 3–5 seed như các mô hình khác.
+- Đầu ra theo cùng format file dự đoán chung và chấm bằng cùng script đánh giá. Cả hai baseline đều không có tính ngẫu nhiên (CRF và hồi quy logistic tối ưu bằng L-BFGS, chạy lại cho đúng cùng kết quả) nên chỉ chạy một lần, ghi là `seed0`.
 - Mã đặt trong `baselines/`. D phụ trách: baseline luật ở tuần 3, baseline CRF ở tuần 4.
 
 ## 3. Dữ liệu
@@ -119,7 +119,7 @@ Nguồn:
 - **Không** chỉ tải checkpoint ASTE có sẵn về suy luận: sẽ không đo được thời gian huấn luyện và không giải thích được chênh lệch.
 - GTS-BiLSTM là mô hình duy nhất không dùng mô hình ngôn ngữ pretrained (chỉ dùng word embedding có sẵn), đóng vai trò mốc đối chiếu.
 - Siêu tham số: dùng cấu hình mặc định của tác giả cho bước reproduce. Mọi thay đổi (giảm batch size, giảm epoch do giới hạn GPU) phải ghi lại.
-- Mỗi cấu hình chạy 3–5 seed, báo cáo trung bình và độ lệch chuẩn.
+- Mỗi cấu hình chạy 2 seed (`0` và `1`), báo cáo trung bình và khoảng cách giữa hai seed. Các paper báo cáo trung bình 5 seed; nhóm giảm xuống 2 vì giới hạn giờ GPU và phải nêu điều này trong báo cáo.
 
 ## 5. Các giai đoạn triển khai
 
@@ -135,13 +135,13 @@ Nguồn:
 - [ ] Cài đúng phiên bản thư viện theo `requirements` của từng repo. Span-ASTE dùng AllenNLP bản cũ, làm sớm nhất.
 - [ ] Tải ASTE-Data-V2, chuyển format, chạy script kiểm tra. Repo GTS gốc đi kèm một bản dữ liệu riêng, không phải ASTE-Data-V2, nên phải chuyển dữ liệu V2 sang format của GTS. EMC-GCN viết dựa trên mã của GTS và dùng format gần giống, nên hai mô hình này dùng chung một script chuyển format.
 - [ ] Chạy thử mỗi mô hình 1 epoch trên 14lap để chắc chắn pipeline thông.
-- [ ] Đo thời gian một lần chạy đầy đủ của mỗi mô hình trên 14lap, rồi lập bảng ước lượng giờ GPU: thời gian mỗi lần chạy × 4 tập × số seed, so với quota Kaggle của cả nhóm. Dựa vào bảng này để chốt số seed và số tập trước khi sang giai đoạn 2.
+- [ ] Đo thời gian một lần chạy đầy đủ của mỗi mô hình trên 14lap, rồi lập bảng ước lượng giờ GPU: thời gian mỗi lần chạy × 4 tập × số seed, so với quota Kaggle của cả nhóm. Nếu tổng giờ vượt quota thì giảm số tập trước khi sang giai đoạn 2.
 
 **Kết quả cần có:** bốn notebook chạy được từ đầu đến cuối, có lưu log; bảng ước lượng giờ GPU.
 
 ### Giai đoạn 2: Reproduce
 
-- [ ] Huấn luyện từng mô hình trên 4 tập, 3–5 seed.
+- [ ] Huấn luyện từng mô hình trên 4 tập, 2 seed.
 - [ ] Ghi lại cho mỗi lần chạy: P, R, F1 trên dev và test, thời gian huấn luyện, số tham số, loại GPU, bộ nhớ GPU cao nhất.
 - [ ] Lưu file dự đoán trên tập test của mọi lần chạy (dùng cho giai đoạn 4).
 - [ ] So với số công bố, ghi nguyên nhân chênh lệch.
@@ -161,8 +161,8 @@ Các nguyên nhân chênh lệch thường gặp cần kiểm tra: khác seed, k
 
 - [ ] Viết một script đánh giá chung: đưa đầu ra của mọi mô hình về cùng dạng tập bộ ba cho mỗi câu, rồi tính P, R, F1 (đúng khi khớp chính xác cả ba phần tử).
 - [ ] Lưu ý: MvP so khớp trên văn bản, các mô hình còn lại so khớp trên chỉ số. Bảng so sánh chính dùng một cách chung cho mọi mô hình: so trên văn bản đã chuẩn hóa chữ thường. Cách này lỏng hơn so trên chỉ số (một từ lặp lại trong câu vẫn được tính đúng), nên với các mô hình có chỉ số phải báo cáo thêm F1 so trên chỉ số, để thấy chênh lệch do cách so khớp và để đối chiếu với số công bố.
-- [ ] Lập bảng tổng hợp: ba mô hình chính, GTS tự chạy, hai baseline không dùng học sâu, baseline trích số. Báo cáo trung bình ± độ lệch chuẩn qua các seed.
-- [ ] Kiểm định ý nghĩa thống kê giữa các cặp mô hình chính (ví dụ paired bootstrap trên tập test). Các mô hình chỉ cách nhau 1–3 điểm F1 trên tập test nhỏ, nên chỉ kết luận mô hình nào tốt hơn khi chênh lệch có ý nghĩa.
+- [ ] Lập bảng tổng hợp: ba mô hình chính, GTS tự chạy, hai baseline không dùng học sâu, baseline trích số. Báo cáo trung bình của 2 seed, kèm khoảng cách giữa hai seed.
+- [ ] Kiểm định ý nghĩa thống kê giữa các cặp mô hình chính (ví dụ paired bootstrap trên tập test, làm riêng cho từng seed). Các mô hình chỉ cách nhau 1–3 điểm F1 trên tập test nhỏ và nhóm chỉ chạy 2 seed, nên chỉ kết luận mô hình nào tốt hơn khi chênh lệch có ý nghĩa ở cả hai seed.
 - [ ] Lập bảng chi phí: số tham số, thời gian huấn luyện, thời gian suy luận mỗi câu, phần cứng. Mọi số đo thời gian lấy trên cùng một loại GPU (T4). Với MvP, đo riêng thời gian suy luận theo số góc nhìn, vì mô hình sinh kết quả cho từng góc nhìn rồi mới bỏ phiếu.
 - [ ] Nêu rõ khác biệt backbone (BERT-base khoảng 110M, T5-base khoảng 220M tham số) khi kết luận.
 
@@ -231,7 +231,7 @@ aste-int3406/
 | Tuần | Công việc | Kết quả cần có |
 |---|---|---|
 | 1 | Giai đoạn 0 và 1 | Đề tài được duyệt, bốn repo chạy thử được, đo được thời gian một lần chạy đầy đủ của mỗi mô hình |
-| 2–3 | Giai đoạn 2; viết sớm script đánh giá chung của giai đoạn 3 | Bảng reproduce đủ seed, mọi file dự đoán được chấm bằng cùng một script |
+| 2–3 | Giai đoạn 2; viết sớm script đánh giá chung của giai đoạn 3 | Bảng reproduce đủ 2 seed, mọi file dự đoán được chấm bằng cùng một script |
 | 4 | Giai đoạn 3; chuẩn bị cho giai đoạn 4 và 5 (công cụ phân tích lỗi, khung demo, dữ liệu DMASTE) | Bảng so sánh thống nhất, bảng chi phí |
 | 5 | Giai đoạn 4 và 5 | Phân tích lỗi, demo, kết quả DMASTE |
 | 6 | Giai đoạn 6 | Báo cáo, slide, repo hoàn chỉnh |
@@ -240,10 +240,10 @@ aste-int3406/
 
 | Thành viên | Giai đoạn 1–2 | Giai đoạn 3–6 |
 |---|---|---|
-| A | EMC-GCN và GTS | Bảng so sánh tổng hợp, bảng chi phí |
+| A | EMC-GCN | Bảng so sánh tổng hợp, kiểm định thống kê, bảng chi phí, DMASTE, slide |
 | B | Span-ASTE | Chủ trì phân tích lỗi |
 | C | MvP | Demo Gradio, thử nghiệm số góc nhìn của MvP |
-| D | Dữ liệu, script chuyển format, script đánh giá chung, gom số baseline | Hai baseline không dùng học sâu, DMASTE, tổng hợp báo cáo |
+| D | Script đánh giá chung, GTS, gom số baseline | Hai baseline không dùng học sâu, tổng hợp báo cáo |
 
 Mỗi người viết phần báo cáo của mô hình mình phụ trách và tự giải thích lỗi của mô hình đó; D ghép và thống nhất báo cáo.
 
@@ -255,9 +255,9 @@ Công việc theo tuần của từng người, quy ước dùng Kaggle, format 
 |---|---|
 | Xung đột thư viện cũ (AllenNLP) | Dùng môi trường riêng với đúng phiên bản Python; nếu không được, dùng bản cài lại công khai và ghi rõ nguồn |
 | Phiên Kaggle hết giờ hoặc bị ngắt giữa chừng | Chạy nền bằng "Save & Run All"; chia notebook theo từng tập hoặc từng nhóm seed; lưu checkpoint và log vào `/kaggle/working` sau mỗi epoch |
-| Hết quota GPU hằng tuần của Kaggle | Tính tổng giờ cần sau tuần 1 để chốt số seed; D dùng tài khoản của mình chạy hộ seed |
-| MvP huấn luyện lâu do nhân dữ liệu theo số góc nhìn | Giảm số seed của MvP trước khi giảm số tập dữ liệu |
-| Không đủ thời gian chạy hết | Ưu tiên đủ seed trên 14lap và 14res hơn là 1 seed trên cả 4 tập |
+| Hết quota GPU hằng tuần của Kaggle | Tính tổng giờ cần sau tuần 1; A dùng tài khoản của mình chạy hộ |
+| MvP huấn luyện lâu do nhân dữ liệu theo số góc nhìn | Chia notebook theo tập; A chạy hộ một phần |
+| Không đủ thời gian chạy hết | Ưu tiên đủ 2 seed trên 14lap và 14res hơn là 1 seed trên cả 4 tập |
 | Kết quả lệch nhiều so với paper | Kiểm tra lại dữ liệu và siêu tham số; nếu vẫn lệch, báo cáo trung thực kèm phân tích nguyên nhân |
 
 ## 11. Sản phẩm nộp

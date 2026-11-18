@@ -51,7 +51,7 @@ class MultiInferBert(torch.nn.Module):
         return logits_list
 
     def forward(self, tokens, masks):
-        bert_feature, _ = self.bert(tokens, masks)
+        bert_feature = self.bert(tokens, masks)[0]
         bert_feature = self.dropout_output(bert_feature)
 
         bert_feature = bert_feature.unsqueeze(2).expand([-1, -1, self.args.max_sequence_len, -1])

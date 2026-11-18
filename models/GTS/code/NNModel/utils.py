@@ -116,9 +116,19 @@ def find_triplet(tags, aspect_spans, opinion_spans):
                 sentiment = 3
             if sentiment == -1:
                 print('wrong!!!!!!!!!!!!!!!!!!!!')
-                input()
             triplets.append([al, ar, pl, pr, sentiment])
     return triplets
+
+
+def predicted_tuples(args, predicted, lengths, ignore_index=-1):
+    """Bộ ba (hoặc cặp) dự đoán của từng câu, theo đúng thứ tự mô hình đã đọc."""
+    find = find_pair if args.task == 'pair' else find_triplet
+    all_tuples = []
+    for i in range(len(predicted)):
+        aspect_spans = get_aspects(predicted[i], lengths[i], ignore_index)
+        opinion_spans = get_opinions(predicted[i], lengths[i], ignore_index)
+        all_tuples.append(find(predicted[i], aspect_spans, opinion_spans))
+    return all_tuples
 
 
 def score_uniontags(args, predicted, golden, lengths, ignore_index=-1):

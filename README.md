@@ -7,7 +7,7 @@ Mọi mô hình được fine-tune từ backbone pretrained (`bert-base-uncased`
 ## Cấu trúc
 
 ```
-docs/       bối cảnh đề bài, kế hoạch triển khai, phân công
+docs/       bối cảnh đề bài, kế hoạch triển khai, phân công, quy ước chung
 data/       ASTE-Data-V2 gốc và script kiểm tra dữ liệu
 models/     mã nguồn của tác giả (mỗi mô hình một thư mục)
 baselines/  baseline không dùng học sâu do nhóm tự viết (luật, CRF)
@@ -16,6 +16,19 @@ eval/       script đánh giá chung, phân tích lỗi
 results/    log, file dự đoán (results/preds/{mô hình}/{tập}/seed{n}.jsonl), runs.csv
 demo/       ứng dụng Gradio
 ```
+
+Các file chính đã có:
+
+| Đường dẫn | Nội dung |
+|---|---|
+| `docs/quy-uoc-chung.md` | Tên gọi, format file dự đoán, cách chấm, cách đo chi phí |
+| `eval/aste_eval.py` | Script đánh giá chung, hàm ghi file dự đoán và hàm tra `id`; test ở `eval/test_aste_eval.py` |
+| `models/GTS/run.sh` | Huấn luyện hoặc dự đoán GTS-BERT, GTS-BiLSTM trên một tập với một seed |
+| `baselines/rule.py`, `baselines/crf.py` | Hai baseline, cách chạy ghi trong `baselines/README.md` |
+| `notebooks/gts-bert.ipynb`, `notebooks/gts-bilstm.ipynb` | Notebook huấn luyện GTS trên Kaggle |
+| `notebooks/gts-test-t4.py` | Script Kaggle chạy checkpoint GTS đã lưu trên tập test để đo thời gian suy luận trên T4 |
+| `results/runs.csv` | Nhật ký mọi lần chạy |
+| `results/so-trich-tu-paper.md` | Số của các baseline trích từ paper |
 
 ## Nguồn mã
 
