@@ -125,9 +125,9 @@ Nguồn:
 
 ### Giai đoạn 0: Duyệt đề tài
 
-- [ ] Hoàn thiện danh sách paper, lý do chọn, đường dẫn mã nguồn.
+- [x] Hoàn thiện danh sách paper, lý do chọn, đường dẫn mã nguồn.
 - [ ] Kiểm tra lại hạng hội nghị trên CORE, số trích dẫn trên Google Scholar.
-- [ ] Nộp giảng viên duyệt.
+- [x] Nộp giảng viên duyệt.
 
 ### Giai đoạn 1: Dựng môi trường và dữ liệu
 
@@ -159,7 +159,7 @@ Các nguyên nhân chênh lệch thường gặp cần kiểm tra: khác seed, k
 
 ### Giai đoạn 3: So sánh thống nhất
 
-- [ ] Viết một script đánh giá chung: đưa đầu ra của mọi mô hình về cùng dạng tập bộ ba cho mỗi câu, rồi tính P, R, F1 (đúng khi khớp chính xác cả ba phần tử).
+- [x] Viết một script đánh giá chung: đưa đầu ra của mọi mô hình về cùng dạng tập bộ ba cho mỗi câu, rồi tính P, R, F1 (đúng khi khớp chính xác cả ba phần tử).
 - [ ] Lưu ý: MvP so khớp trên văn bản, các mô hình còn lại so khớp trên chỉ số. Bảng so sánh chính dùng một cách chung cho mọi mô hình: so trên văn bản đã chuẩn hóa chữ thường. Cách này lỏng hơn so trên chỉ số (một từ lặp lại trong câu vẫn được tính đúng), nên với các mô hình có chỉ số phải báo cáo thêm F1 so trên chỉ số, để thấy chênh lệch do cách so khớp và để đối chiếu với số công bố.
 - [ ] Lập bảng tổng hợp: ba mô hình chính, GTS tự chạy, hai baseline không dùng học sâu, baseline trích số. Báo cáo trung bình của 2 seed, kèm khoảng cách giữa hai seed.
 - [ ] Kiểm định ý nghĩa thống kê giữa các cặp mô hình chính (ví dụ paired bootstrap trên tập test, làm riêng cho từng seed). Các mô hình chỉ cách nhau 1–3 điểm F1 trên tập test nhỏ và nhóm chỉ chạy 2 seed, nên chỉ kết luận mô hình nào tốt hơn khi chênh lệch có ý nghĩa ở cả hai seed.
