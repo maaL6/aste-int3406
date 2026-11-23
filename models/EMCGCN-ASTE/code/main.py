@@ -3,7 +3,8 @@
 import json, os
 import random
 import argparse
-
+import sys
+from pathlib import Path
 import torch
 import torch.nn.functional as F
 from tqdm import trange
@@ -15,8 +16,11 @@ import utils
 import numpy as np
 
 from prepare_vocab import VocabHelp
-from transformers import AdamW
+from torch.optim import AdamW
 
+REPO_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(REPO_ROOT / "eval"))
+from aste_eval import IdLookup, read_gold, write_preds
 
 def get_bert_optimizer(model, args):
     # # Prepare optimizer and schedule (linear warmup and decay)
@@ -82,9 +86,13 @@ def train(args):
     optimizer = get_bert_optimizer(model, args)
 
     # label = ['N', 'B-A', 'I-A', 'A', 'B-O', 'I-O', 'O', 'negative', 'neutral', 'positive']
-    weight = torch.tensor([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0]).float().cuda()
+    weight = torch.tensor(
+        [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0],
+        dtype=torch.float,
+        device=args.device,
+    )
 
-    best_joint_f1 = 0
+    best_joint_f1 = -1.0
     best_joint_epoch = 0
     for i in range(args.epochs):
         print('Epoch:{}'.format(i))
@@ -123,8 +131,19 @@ def train(args):
         joint_precision, joint_recall, joint_f1 = eval(model, devset, args)
 
         if joint_f1 > best_joint_f1:
-            model_path = args.model_dir + 'bert' + args.task + '.pt'
-            torch.save(model, model_path)
+            model_path = os.path.join(
+                args.model_dir,
+                f"{args.dataset}-seed{args.seed}.pt",
+            )
+            torch.save(
+                {
+                    "model_state_dict": model.state_dict(),
+                    "model_args": vars(args).copy(),
+                    "epoch": i,
+                    "dev_f1": joint_f1,
+                },
+                model_path,
+            )
             best_joint_f1 = joint_f1
             best_joint_epoch = i
     print('best epoch: {}\tbest dev {} f1: {:.5f}\n\n'.format(best_joint_epoch, args.task, best_joint_f1))
@@ -177,8 +196,22 @@ def eval(model, dataset, args, FLAG=False):
 
 def test(args):
     print("Evaluation on testset:")
-    model_path = args.model_dir + 'bert' + args.task + '.pt'
-    model = torch.load(model_path).to(args.device)
+    model_path = os.path.join(
+        args.model_dir,
+        f"{args.dataset}-seed{args.seed}.pt",
+    )
+    checkpoint = torch.load(
+        model_path,
+        map_location="cpu",
+        weights_only=True,
+    )
+
+    model_args = argparse.Namespace(**checkpoint["model_args"])
+    model_args.device = args.device
+
+    model = EMCGCN(model_args)
+    model.load_state_dict(checkpoint["model_state_dict"])
+    model = model.to(args.device)
     model.eval()
 
     sentence_packs = json.load(open(args.prefix + args.dataset + '/test.json'))
