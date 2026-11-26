@@ -26,9 +26,14 @@ Các file chính đã có:
 | `models/GTS/run.sh` | Huấn luyện hoặc dự đoán GTS-BERT, GTS-BiLSTM trên một tập với một seed |
 | `baselines/rule.py`, `baselines/crf.py` | Hai baseline, cách chạy ghi trong `baselines/README.md` |
 | `notebooks/gts-bert.ipynb`, `notebooks/gts-bilstm.ipynb` | Notebook huấn luyện GTS trên Kaggle |
+| `notebooks/mvp.ipynb` | Notebook huấn luyện MvP trên Kaggle (train + ablation + DMASTE, gọi `scripts/run_main.sh`) |
+| `models/multi-view-prompting/README.md` | Phần nhóm sửa trong MvP, kết quả, ablation, DMASTE |
+| `results/MVP_ERRORS.md` | Phân tích lỗi MvP (nhãn theo quy ước mục 10) |
+| `results/MVP_ABLATION.md` | Bảng F1 theo số góc nhìn K |
 | `notebooks/gts-test-t4.py` | Script Kaggle chạy checkpoint GTS đã lưu trên tập test để đo thời gian suy luận trên T4 |
 | `results/runs.csv` | Nhật ký mọi lần chạy |
 | `results/so-trich-tu-paper.md` | Số của các baseline trích từ paper |
+| `demo/app.py` | Demo Gradio: MvP chạy trực tiếp, các mô hình khác hiện dự đoán lưu sẵn |
 
 ## Nguồn mã
 
@@ -40,7 +45,6 @@ Mã trong `models/` được copy nguyên trạng từ repo của tác giả tro
 | `models/GTS` | GTS (Findings of EMNLP 2020) | [NJUNLP/GTS](https://github.com/NJUNLP/GTS) | `bbb5a6c` |
 | `models/Span-ASTE` | Span-ASTE (ACL 2021) | [chiayewken/Span-ASTE](https://github.com/chiayewken/Span-ASTE) | `b252f8b` |
 | `models/multi-view-prompting` | MvP (ACL 2023) | [ZubinGou/multi-view-prompting](https://github.com/ZubinGou/multi-view-prompting) | `549a2b7` |
-
 ## Dữ liệu
 
 Nguồn gốc: `data/ASTE-Data-V2/`, lấy từ thư mục `ASTE-Data-V2-EMNLP2020` của [xuuuluuu/SemEval-Triplet-data](https://github.com/xuuuluuu/SemEval-Triplet-data) (commit `d0df660`).

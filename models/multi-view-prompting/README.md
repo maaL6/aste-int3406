@@ -7,20 +7,26 @@ Aspect Sentiment Tuple Prediction*, ACL 2023. Repo:
 
 ## Chạy
 
-```bash
-# trên Kaggle: notebooks/mvp.ipynb (Python 3.8 + torch 1.12 + transformers 4.14.1)
-# Notebook chỉ gọi run_all.py; dùng được cho cả 4 phần:
-python models/multi-view-prompting/run_all.py                    # tất cả
-python models/multi-view-prompting/run_all.py --parallel 2        # 2 GPU song song
-python models/multi-view-prompting/run_all.py --only 14lap --only 14res
-python models/multi-view-prompting/run_all.py --skip-ablation --skip-dmaste
-python models/multi-view-prompting/run_all.py --dry-run           # in kế hoạch
+Repo đã public nên clone không cần token. Trên Kaggle chạy `notebooks/mvp.ipynb`
+(Python 3.8 venv dựng ở ô 2), hoặc bằng tay:
 
-# từng phần lẻ
-bash models/multi-view-prompting/run.sh 14lap 0
-bash models/multi-view-prompting/run.sh 14lap 0 ablate      # đổi K, dùng lại final/
+```bash
+# từng lần chạy (notebook gọi đúng lệnh này)
+bash models/multi-view-prompting/scripts/run_main.sh laptop14 0
+bash models/multi-view-prompting/scripts/run_main.sh rest16 1
+
+# không tham số = cả 4 tập × 2 seed
+PARALLEL=2 bash models/multi-view-prompting/scripts/run_main.sh
+
+# suy luận lại với K khác, dùng checkpoint đã train (không train lại)
+MODE=infer NUM_PATH=3 SAVE_DIR_TAG=/k3 \
 CKPT=results/runs/mvp/laptop14/seed0/final \
-  bash models/multi-view-prompting/run.sh dmaste book
+  bash models/multi-view-prompting/scripts/run_main.sh laptop14 0
+
+# DMASTE zero-shot
+MODE=infer DATA_OVERRIDE=dmaste_book MAX_SEQ_LENGTH=256 EVAL_BATCH_SIZE=32 \
+CKPT=results/runs/mvp/laptop14/seed0/final \
+  bash models/multi-view-prompting/scripts/run_main.sh dmaste_book 0
 
 # demo (MvP chạy trực tiếp, ba mô hình còn lại hiện dự đoán lưu sẵn)
 python demo/app.py --share
@@ -58,12 +64,12 @@ models/multi-view-prompting` là danh sách đầy đủ.
 | 4 | `force_tokens.json` sinh lại khi thiếu, và giữ dict theo task | Bản gốc ghi `dic['sentiment_tokens'] = sp_tokenize_res` đè lên dict vừa dựng, đồng thời dùng lại biến `task` của vòng lặp nên sai task ở lần gọi sau |
 | 5 | Bỏ phiếu giữ khía cạnh ẩn; giải mã ràng buộc cho phép token `it` | ASTE-Data-V2 không có khía cạnh ẩn nên hành vi trên bốn tập không đổi; DMASTE thì có |
 | 6 | Bỏ checkpoint trung gian (`--save_top_k 0`), chỉ giữ `final/` | Tiết kiệm đĩa; quy ước chọn checkpoint của MvP là epoch cuối, không phải F1 dev cao nhất |
-| 7 | Thêm `run_all.py` điều phối cả 4 phần, `run.sh` nhận thêm `MODE=ablate` và nhánh `dmaste` | Notebook chỉ còn lệnh cài/chạy (mục 8 của quy ước); ablation và zero-shot chạy được bằng một lệnh |
+| 7 | Sửa `scripts/run_main.sh` cho chạy đủ 4 tập × 2 seed, ghi `results/`, và thêm `MODE=infer` để suy luận lại không train | Đúng yêu cầu mục 3 của `docs/phan-cong-cong-viec.md`. Giữ nguyên cách repo gốc tách `run_main.sh` (có `--do_train`) và `eval_unified.sh` (không có) |
 
 Chạy trên **2 GPU song song**, mỗi run một GPU riêng (không DDP). Kaggle tính 1 giờ
 trên 2 GPU là 1 giờ quota nên song song chỉ lãi thời gian; kết quả giống hệt chạy tuần
-tự vì mỗi run độc lập. `run_all.py --parallel 2` tự chia GPU: xong run nào thì nhận
-run tiếp theo, mỗi tiến trình nhận `CUDA_VISIBLE_DEVICES=0` hoặc `1` (vì `main.py`
+tự vì mỗi run độc lập. Vòng lặp nằm trong notebook (`PARALLEL = 2`): xong run nào thì
+nhận run tiếp theo, mỗi tiến trình nhận `CUDA_VISIBLE_DEVICES=0` hoặc `1` (vì `main.py`
 luôn gọi `cuda:0`, đặt biến này là cách duy nhất để nó thấy đúng card).
 
 ## 3. Kết quả so với paper và lý do chênh lệch
@@ -213,9 +219,10 @@ hoạch cũng ghi "nếu có thì lọc".
 
 ```bash
 python models/multi-view-prompting/prepare_dmaste.py --target-only --verify
-CKPT=results/runs/mvp/laptop14/seed0/final \
+MODE=infer DATA_OVERRIDE=dmaste_book \
 MAX_SEQ_LENGTH=256 EVAL_BATCH_SIZE=32 \
-  bash models/multi-view-prompting/run.sh dmaste book
+CKPT=results/runs/mvp/laptop14/seed0/final \
+  bash models/multi-view-prompting/scripts/run_main.sh dmaste_book 0
 python models/multi-view-prompting/eval_dmaste.py --csv results/MVP_DMASTE.csv
 ```
 
