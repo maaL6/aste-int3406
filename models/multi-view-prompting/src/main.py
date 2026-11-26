@@ -386,7 +386,14 @@ class T5FineTuner(pl.LightningModule):
         cur_id = input_ids[-1]
 
         if cur_id in to_id['[']:
-            return force_tokens['special_tokens']
+            allowed = force_tokens['special_tokens']
+            if task == "aste":
+                # MvP-ASTE-TOOLKIT: ASTE khong co aspect category, nen [C] khong
+                # bao gio hop le. Bo no khoi danh sach duoc phep de mo hinh khong
+                # the sinh ra [C] -> tranh KeyError cate_tokens[data_name] voi
+                # dataset khong co trong cate_tokens (vd dmaste_*).
+                allowed = [t for t in allowed if t not in to_id['AC']]
+            return allowed
         elif cur_id in to_id['AT'] + to_id['OT'] + to_id['EP'] + to_id['SP'] + to_id['AC']:  
             return to_id[']']  
         elif cur_id in to_id['SS']:  
@@ -415,7 +422,13 @@ class T5FineTuner(pl.LightningModule):
         elif cur_term in to_id['SS']:
             ret = [3] + to_id[']'] + [1]
         elif cur_term in to_id['AC']:  # AC
-            ret = force_tokens['cate_tokens'][data_name]
+            # MvP-ASTE-TOOLKIT: chi tasd/asqp/acos moi co aspect category. Voi aste
+            # nhanh tren da loai [C] khoi tap duoc phep, nen khong bao gio toi day;
+            # van chan them mot lop de khong bao gio KeyError.
+            if task != "aste" and data_name in force_tokens['cate_tokens']:
+                ret = force_tokens['cate_tokens'][data_name]
+            else:
+                ret = to_id[']']
         elif cur_term in to_id['OT']:  # OT
             force_list = source_ids[batch_id].tolist()
             if task == "acos":

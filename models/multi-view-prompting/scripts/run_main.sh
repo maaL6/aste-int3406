@@ -77,8 +77,8 @@ run_one() {
   SEED=$2
   GPU=$3
   DATA=$(to_data_name "$TAP")
-  LOG=$OUT/logs/mvp/$TAP/seed$SEED$SAVE_DIR_TAG.log
-  RUN=$OUT/runs/mvp/$DATA/seed$SEED$SAVE_DIR_TAG
+  LOG=$OUT/logs/mvp/$TAP/seed$SEED${SAVE_DIR_TAG}.log
+  RUN=$OUT/runs/mvp/$DATA/seed$SEED${SAVE_DIR_TAG}
   STATS=${LOG%.log}.stats.json
 
   mkdir -p "$RUN" "$(dirname "$LOG")"
@@ -147,6 +147,14 @@ for job in $JOBS; do
 done
 wait
 
-# ghi file dự đoán đúng format chung (chấm bằng eval/aste_eval.py sau)
-"$PYTHON" "$ROOT/models/multi-view-prompting/export_preds.py" \
-  --runs "$OUT/runs/mvp" --out "$ROOT" --k "$NUM_PATH"
+# ghi file dự đoán đúng format chung
+if [ -n "${DATA_OVERRIDE:-}" ]; then
+  # DMASTE: mỗi domain ghi vào preds/mvp-dmaste/<domain>/seed<n>.jsonl
+  DOMAIN=${DATA_OVERRIDE#dmaste_}
+  "$PYTHON" "$ROOT/models/multi-view-prompting/export_preds.py" \
+    --runs "$OUT/runs/mvp/$DATA/seed0" --out "$ROOT" \
+    --dmaste --domain "$DOMAIN" --seed 0
+else
+  "$PYTHON" "$ROOT/models/multi-view-prompting/export_preds.py" \
+    --runs "$OUT/runs/mvp" --out "$ROOT" --k "$NUM_PATH"
+fi

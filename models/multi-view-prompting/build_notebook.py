@@ -106,6 +106,14 @@ else:
 # script huấn luyện của repo gốc phải có mặt
 assert pathlib.Path("models/multi-view-prompting/scripts/run_main.sh").exists(), \\
     "thiếu scripts/run_main.sh — clone sai branch?"
+
+# force_tokens.json là file SINH RA lúc chạy, và nội dung phụ thuộc danh sách
+# dataset trong const.py. Bản cũ (từ upstream) không có domain DMASTE, nên
+# cate_tokens thiếu key -> KeyError khi chạy DMASTE. Xoá để main.py sinh lại.
+stale = pathlib.Path("models/multi-view-prompting/src/force_tokens.json")
+if stale.exists():
+    stale.unlink()
+    print("đã xoá force_tokens.json cũ để main.py sinh lại đúng dataset")
 """)
 
 code("""
@@ -121,13 +129,15 @@ assert os.path.isdir(ROOT), "chưa clone repo — chạy ô 1 trước"
 os.chdir(ROOT)
 
 subprocess.run([sys.executable, "-m", "pip", "install", "-q", "uv"], check=True)
+
+# --seed: uv venv KHÔNG cài pip mặc định, thiếu cờ này thì `python -m pip` báo
+# "No module named pip". --seed cài pip + setuptools + wheel vào venv.
 fresh = not os.path.exists(VENV + "/bin/python")
 if fresh:
-    subprocess.run(["uv", "venv", "--python", "3.8", VENV], check=True)
+    subprocess.run(["uv", "venv", "--seed", "--python", "3.8", VENV], check=True)
 PY = VENV + "/bin/python"
 
 if fresh or not os.path.isdir(VENV + "/lib/python3.8/site-packages/torch"):
-    subprocess.run([PY, "-m", "pip", "install", "-q", "pip", "wheel"], check=True)
     subprocess.run(
         [PY, "-m", "pip", "install", "-q",
          "torch==1.12.1+cu116", "torchvision==0.13.1+cu116", "torchaudio==0.12.1",
@@ -141,13 +151,33 @@ print("venv ready:", PY)
 
 code("""
 # 3. Phiên bản và GPU
-import subprocess
-subprocess.run(["nvidia-smi"], check=False)
-subprocess.run(["/kaggle/working/mvpenv/bin/python", "-c",
-                "import sys, torch, transformers, pytorch_lightning as pl;"
-                "print(sys.version);"
-                "print('torch', torch.__version__, '| transformers', transformers.__version__,"
-                "'| pl', pl.__version__)"], check=True)
+import shutil, subprocess
+
+ROOT = "/kaggle/working/aste"
+PY = "/kaggle/working/mvpenv/bin/python"
+
+# nvidia-smi là công cụ của driver NVIDIA, dùng để xem GPU. Không có nó nghĩa là
+# phiên này không được cấp GPU (Kaggle: Settings -> Accelerator -> GPU T4 x2).
+if shutil.which("nvidia-smi"):
+    subprocess.run(["nvidia-smi"], check=False)
+else:
+    print("!! không tìm thấy nvidia-smi -> phiên này KHÔNG có GPU NVIDIA")
+
+check = (
+    "import sys, torch, transformers, pytorch_lightning as pl;"
+    "print(sys.version);"
+    "print('torch', torch.__version__, '| transformers', transformers.__version__,"
+    " '| pl', pl.__version__);"
+    "print('cuda available:', torch.cuda.is_available(),"
+    " '| so GPU:', torch.cuda.device_count());"
+    "sys.exit(0 if torch.cuda.is_available() else 3)"
+)
+if subprocess.run([PY, "-c", check]).returncode != 0:
+    raise AssertionError(
+        "Phiên này không có GPU. Train 8 run x 20 epoch trên CPU sẽ mất hàng chục giờ,\\n"
+        "nên dừng ở đây. Vào Settings -> Accelerator -> GPU T4 x2 (hoặc P100), Save, "
+        "rồi Run All lại.")
+print("GPU OK")
 """)
 
 md("""
@@ -213,7 +243,7 @@ if RUN_ABLATION:
                 "15res": "rest15", "16res": "rest16"}[tap])
             assert os.path.isdir(ckpt), "chưa có %s — chạy ô 4 trước" % ckpt
             env = dict(os.environ, PYTHON=PY, MODE="infer", CKPT=ckpt,
-                       NUM_PATH=str(k), SAVE_DIR_TAG="/k%d" % k,
+                       NUM_PATH=str(k), SAVE_DIR_TAG=".k%d" % k,
                        TOKENIZERS_PARALLELISM="false")
             print("--- %s K=%d" % (tap, k), flush=True)
             subprocess.run(["bash", "models/multi-view-prompting/scripts/run_main.sh",
@@ -254,15 +284,23 @@ if RUN_DMASTE:
     subprocess.run([PY, "models/multi-view-prompting/prepare_dmaste.py",
                     "--repo", "models/multi-view-prompting",
                     "--target-only", "--verify"], check=True)
+
+    failed = []
     for dom in ["book", "pet", "toy", "grocery"]:
         print("--- DMASTE", dom, flush=True)
         env = dict(os.environ, PYTHON=PY, MODE="infer", CKPT=CKPT,
                    DATA_OVERRIDE="dmaste_" + dom,
                    MAX_SEQ_LENGTH="256", EVAL_BATCH_SIZE="32",
                    SAVE_DIR_TAG="", TOKENIZERS_PARALLELISM="false")
-        # run_main.sh coi tham số 1 là tên tập -> log/run dir mang tên domain
-        subprocess.run(["bash", "models/multi-view-prompting/scripts/run_main.sh",
-                        "dmaste_" + dom, "0"], env=env, check=True)
+        rc = subprocess.run(
+            ["bash", "models/multi-view-prompting/scripts/run_main.sh",
+             "dmaste_" + dom, "0"], env=env).returncode
+        if rc != 0:
+            failed.append(dom)
+            print("!! {} lỗi (exit {}) — xem results/logs/mvp/dmaste_{}/seed0.log"
+                  .format(dom, rc, dom))
+
+    assert not failed, "DMASTE lỗi ở: {}".format(", ".join(failed))
     subprocess.run([PY, "models/multi-view-prompting/eval_dmaste.py",
                     "--csv", "results/MVP_DMASTE.csv"], check=True)
 else:

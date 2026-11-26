@@ -171,3 +171,6 @@ cython_debug/
 
 # DMASTE raw download (prepare_dmaste.py); chi giu ban da chuyen trong data/aste
 dmaste_raw/
+
+# force_tokens.json sinh ra luc chay (phu thuoc task + danh sach dataset), khong commit
+src/force_tokens.json

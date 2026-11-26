@@ -183,18 +183,18 @@ Sinh lại bằng `python models/multi-view-prompting/ablation_table.py`. Ba đi
 `results/logs/mvp/{tập}/seed{n}.log` là log huấn luyện thật của session Kaggle,
 `seed{n}.result.txt` là `result.txt` của repo, `seed{n}.stats.json` là các số đã trích.
 
-| Tập | seed | dev F1 | phút train | ms/câu | repo F1 |
-|---|---|---:|---:|---:|---:|
-| 14lap | 0 | 60.80 | 50.9 | 478.7 | 63.19 |
-| 14lap | 1 | 59.40 | 50.0 | 475.6 | 63.56 |
-| 14res | 0 | 64.50 | 74.2 | 658.5 | 74.95 |
-| 14res | 1 | 63.40 | 73.0 | 656.5 | 74.11 |
-| 15res | 0 | 71.80 | 33.0 | 465.8 | 66.73 |
-| 15res | 1 | 73.60 | 32.5 | 484.5 | 66.87 |
-| 16res | 0 | 72.90 | 46.8 | 490.8 | 75.10 |
-| 16res | 1 | 74.00 | 46.1 | 500.0 | 74.81 |
+| Tập | seed | dev F1 | phút train | ms/câu | MB GPU | repo F1 |
+|---|---|---:|---:|---:|---:|---:|
+| 14lap | 0 | 60.80 | 53.2 | 544.1 | 7888 | 63.19 |
+| 14lap | 1 | 59.40 | 53.3 | 538.3 | 8003 | 63.56 |
+| 14res | 0 | 64.50 | 77.3 | 717.2 | 8836 | 74.95 |
+| 14res | 1 | 63.40 | 77.2 | 754.0 | 8856 | 74.11 |
+| 15res | 0 | 71.80 | 34.7 | 541.9 | 8819 | 66.73 |
+| 15res | 1 | 73.60 | 34.8 | 531.8 | 8830 | 66.87 |
+| 16res | 0 | 72.90 | 48.8 | 484.0 | 8338 | 75.10 |
+| 16res | 1 | 74.00 | 48.8 | 489.3 | 8402 | 74.81 |
 
-Ba điều phải nói rõ trong báo cáo, nếu không người đọc sẽ tưởng bảng sai:
+Bốn điều phải nói rõ trong báo cáo, nếu không người đọc sẽ tưởng bảng sai:
 
 - **`dev_f1` không so được với `test_f1`.** Hàm `evaluate` trong `T5FineTuner` chấm dev
   bằng giải mã **không ràng buộc, 1 góc nhìn, không bỏ phiếu**, còn test mới chạy đủ
@@ -203,12 +203,14 @@ Ba điều phải nói rõ trong báo cáo, nếu không người đọc sẽ t�
   Chỉ số dev dùng để vẽ đường hội tụ và chứng minh mô hình có học, **không** dùng để
   chọn checkpoint (MvP giữ epoch cuối).
 - **`ms_moi_cau` là cho cả 5 góc nhìn**, không phải một lượt sinh. Chia cho K nếu bảng
-  chi phí cần "mỗi góc nhìn". Đo trên T4, chỉ tính phần `generate` của tập test, không
-  tính nạp mô hình và tokenize.
-- **`mb_gpu` để trống** vì `pytorch-lightning` không in `max_memory_allocated`. Muốn có
-  thì phải chạy lại một lần suy luận có gọi hàm đó. Ước lượng từ kích thước mô hình:
-  T5-base 892 MB tham số, batch 16 × 200 token, đỉnh thực tế khoảng 3–4 GB trên T4
-  15 GB — nhưng đừng ghi ước lượng vào bảng như số thật.
+  chi phí cần "mỗi góc nhìn" (≈ 97–151 ms). Đo trên T4, chỉ tính phần `generate` của
+  tập test, không tính nạp mô hình và tokenize.
+- **`mb_gpu` là `torch.cuda.max_memory_allocated()`** đo sau khi train xong, đúng định
+  nghĩa mục 6. Dao động 7.9–8.9 GB tuỳ độ dài câu của từng tập (14res dài nhất). Con số
+  này đo trên T4 15 GB với batch 16 × 200 token; nếu chạy batch lớn hơn thì phải đo lại.
+- **Thời gian và bộ nhớ đo trên T4, chạy 2 GPU song song.** Mỗi run một GPU riêng nên
+  không tranh VRAM, nhưng `phut_train` có thể cao hơn chạy đơn lẻ ~5% do chia sẻ CPU
+  (tokenize dùng 2 worker). Đừng so trực tiếp với bảng của GTS nếu GTS chạy tuần tự.
 
 ## 8. DMASTE zero-shot
 
