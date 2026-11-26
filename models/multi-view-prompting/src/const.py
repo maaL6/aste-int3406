@@ -61,8 +61,22 @@ laptop_aspect_cate_list = [
     'laptop price'
 ]
 
-with open("force_tokens.json", 'r') as f:
-    force_tokens = json.load(f)
+def _load_force_tokens():
+    """Doc force_tokens.json; tra ve dict rong neu chua co.
+
+    File nay do main.py sinh ra trong lan chay dau (prefix_allowed_tokens_fn), nhung
+    const.py lai duoc import TRUOC khi code do chay. Neu file khong ton tai thi
+    `import const` chet voi FileNotFoundError. Tra dict rong de main.py tu sinh lai.
+    """
+    try:
+        with open("force_tokens.json", 'r') as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {"cate_tokens": {}, "all_tokens": {},
+                "sentiment_tokens": {}, "special_tokens": []}
+
+
+force_tokens = _load_force_tokens()
 
 cate_list = {
     "rest14": rest_aspect_cate_list,

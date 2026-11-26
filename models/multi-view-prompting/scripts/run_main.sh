@@ -134,13 +134,30 @@ else
   done
 fi
 
-# chạy theo lô PARALLEL, mỗi job một GPU; lô xong mới sang lô tiếp
+# chạy theo lô PARALLEL, mỗi job một GPU; lô xong mới sang lô tiếp.
+# Job chạy nền nên PHẢI tự ghi lại exit code: nếu main.py chết mà không ai kiểm tra
+# thì script vẫn "xong" và bước export chỉ báo MISSING, che mất lỗi thật trong log.
 gpu=0
 n=0
 LAST_SEED=0
+FAIL_MARK=$(mktemp)
 for job in $JOBS; do
   LAST_SEED=${job##*:}
-  run_one "${job%%:*}" "${job##*:}" $gpu &
+  TAP=${job%%:*}
+  SEED=${job##*:}
+  (
+    run_one "$TAP" "$SEED" $gpu
+    rc=$?
+    if [ "$rc" -ne 0 ]; then
+      LOG=$OUT/logs/mvp/$TAP/seed$SEED${SAVE_DIR_TAG}.log
+      {
+        echo "!! $TAP seed$SEED lỗi (exit $rc). 30 dòng cuối của $LOG:"
+        tail -n 30 "$LOG" 2>/dev/null
+        echo ""
+      } >> "$FAIL_MARK"
+    fi
+    exit $rc
+  ) &
   gpu=$(( (gpu + 1) % PARALLEL ))
   n=$(( n + 1 ))
   if [ $(( n % PARALLEL )) -eq 0 ]; then
@@ -148,6 +165,14 @@ for job in $JOBS; do
   fi
 done
 wait
+
+if [ -s "$FAIL_MARK" ]; then
+  cat "$FAIL_MARK" >&2
+  rm -f "$FAIL_MARK"
+  echo "!! có run thất bại — dừng trước khi export để không tạo file dự đoán thiếu." >&2
+  exit 1
+fi
+rm -f "$FAIL_MARK"
 
 # ghi file dự đoán đúng format chung.
 # Lưu ý: DATA/SEED là biến CỤC BỘ trong run_one(), nên ở đây phải tự suy ra lại;

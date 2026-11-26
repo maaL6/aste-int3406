@@ -332,16 +332,23 @@ class T5FineTuner(pl.LightningModule):
         Constrained Decoding
         # ids = self.tokenizer("text", return_tensors='pt')['input_ids'].tolist()[0]
         """
-        if not os.path.exists('./force_tokens.json'):
+        # MvP-ASTE-TOOLKIT: khong chi kiem tra file ton tai, ma con phai du dataset
+        # dang chay. Ban force_tokens.json cu (tu upstream) thieu domain DMASTE,
+        # khien cate_tokens[data_name] nem KeyError giua luc sinh.
+        need_cate = data_name in cate_list or task != 'aste'
+        if (not os.path.exists('./force_tokens.json')
+                or not force_tokens.get('special_tokens')
+                or (task != 'aste' and data_name not in force_tokens.get('cate_tokens', {}))
+                or task not in force_tokens.get('sentiment_tokens', {})):
             dic = {"cate_tokens":{}, "all_tokens":{}, "sentiment_tokens":{}, 'special_tokens':[]}  # MvP-ASTE-TOOLKIT: per-task dict
-            for task in force_words.keys():
-                dic["all_tokens"][task] = {}
-                for dataset in force_words[task].keys():
-                    cur_list = force_words[task][dataset]
+            for _ft in force_words.keys():
+                dic["all_tokens"][_ft] = {}
+                for dataset in force_words[_ft].keys():
+                    cur_list = force_words[_ft][dataset]
                     tokenize_res = []
                     for w in cur_list:
                         tokenize_res.extend(self.tokenizer(w, return_tensors='pt')['input_ids'].tolist()[0])
-                    dic["all_tokens"][task][dataset] = tokenize_res
+                    dic["all_tokens"][_ft][dataset] = tokenize_res
             for k,v in cate_list.items():
                 tokenize_res = []
                 for w in v:
@@ -350,8 +357,8 @@ class T5FineTuner(pl.LightningModule):
             sp_tokenize_res = []
             for sp in ['great', 'ok', 'bad']:
                 sp_tokenize_res.extend(self.tokenizer(sp, return_tensors='pt')['input_ids'].tolist()[0])
-            for _ft_task in force_words.keys():
-                dic['sentiment_tokens'][_ft_task] = sp_tokenize_res
+            for _ft in force_words.keys():
+                dic['sentiment_tokens'][_ft] = sp_tokenize_res
             # MvP-ASTE-TOOLKIT: keep the per-task dict, and do not shadow `task`
             special_tokens_tokenize_res = []
             for w in ['[O','[A','[S','[C','[SS']:
@@ -361,6 +368,10 @@ class T5FineTuner(pl.LightningModule):
             import json
             with open("force_tokens.json", 'w') as f:
                 json.dump(dic, f, indent=4)
+            # MvP-ASTE-TOOLKIT: force_tokens duoc import bang `from const import *`,
+            # nen ghi file thoi chua du — phai cap nhat ca bien module, khong thi
+            # phan duoi van dung dict rong va decoder khong sinh duoc token nao.
+            globals()['force_tokens'] = dic
 
         to_id = {
             'OT': [667],
