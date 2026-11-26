@@ -226,10 +226,14 @@ def parse_aste_tuple(_tuple, sent):
     if isinstance(_tuple[0], str):
         res = _tuple
     elif isinstance(_tuple[0], list):
-        # parse at
-        start_idx = _tuple[0][0]
-        end_idx = _tuple[0][-1] if len(_tuple[0]) > 1 else start_idx
-        at = ' '.join(sent[start_idx:end_idx + 1])
+        # MvP-ASTE-TOOLKIT: DMASTE uses [-1] for an implicit aspect term.
+        if _tuple[0] == [-1]:
+            at = 'it'
+        else:
+            # parse at
+            start_idx = _tuple[0][0]
+            end_idx = _tuple[0][-1] if len(_tuple[0]) > 1 else start_idx
+            at = ' '.join(sent[start_idx:end_idx + 1])
 
         # parse ot
         start_idx = _tuple[1][0]
@@ -522,7 +526,7 @@ class ABSADataset(Dataset):
             tokenized_input = self.tokenizer.batch_encode_plus(
                 [input],
                 max_length=self.max_len,
-                padding="max_length",
+                padding="longest",  # MvP-ASTE-TOOLKIT: fast padding
                 truncation=True,
                 return_tensors="pt")
             
@@ -534,9 +538,32 @@ class ABSADataset(Dataset):
             tokenized_target = self.tokenizer.batch_encode_plus(
                 [target],
                 max_length=target_max_length,
-                padding="max_length",
+                padding="longest",  # MvP-ASTE-TOOLKIT: fast padding
                 truncation=True,
                 return_tensors="pt")
 
             self.inputs.append(tokenized_input)
             self.targets.append(tokenized_target)
+
+
+# === MvP-ASTE-TOOLKIT: fast padding ===
+def aste_collate(batch):
+    """Pad theo do dai lon nhat trong batch thay vi max_length co dinh.
+
+    Pad id = 0 (T5). T5FineTuner._step() doi id 0 thanh -100 nen cac vi tri pad
+    khong vao loss; attention_mask chan chung o encoder/decoder.
+    """
+    out = {}
+    for ids_key, mask_key in (("source_ids", "source_mask"),
+                              ("target_ids", "target_mask")):
+        seqs = [b[ids_key] for b in batch]
+        width = max(s.size(0) for s in seqs)
+        ids = torch.zeros((len(seqs), width), dtype=seqs[0].dtype)
+        mask = torch.zeros((len(seqs), width), dtype=seqs[0].dtype)
+        for i, s in enumerate(seqs):
+            ids[i, :s.size(0)] = s
+            mask[i, :s.size(0)] = 1
+        out[ids_key] = ids
+        out[mask_key] = mask
+    return out
+# === end MvP-ASTE-TOOLKIT ===

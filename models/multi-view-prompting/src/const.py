@@ -199,3 +199,21 @@ heuristic_orders = {
     'asqp': ['[A] [O] [C] [S]'],
     'acos': ['[A] [O] [C] [S]'],
 }
+
+# === MvP-ASTE-TOOLKIT: DMASTE registration ===
+# In-domain domains of DMASTE (Xu et al., Findings ACL 2023).  The four target
+# domains (book/pet/toy/grocery) only have dev/test splits and are listed for
+# completeness so that cross-domain evaluation can be configured later.
+DMASTE_ASTE_DOMAINS = [
+    "dmaste_electronics", "dmaste_fashion", "dmaste_beauty", "dmaste_home",
+    "dmaste_book", "dmaste_pet", "dmaste_toy", "dmaste_grocery",
+]
+_DMASTE_ORDERS = [
+    "[A] [O] [S]", "[O] [A] [S]", "[O] [S] [A]",
+    "[A] [S] [O]", "[S] [O] [A]", "[S] [A] [O]",
+]
+for _dmaste_data in DMASTE_ASTE_DOMAINS:
+    optim_orders_all.setdefault("aste", {})[_dmaste_data] = list(_DMASTE_ORDERS)
+    force_words.setdefault("aste", {})[_dmaste_data] = (
+        list(senttag2opinion.values()) + ["[SSEP]"])
+# === end MvP-ASTE-TOOLKIT ===

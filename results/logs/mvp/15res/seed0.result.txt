@@ -1,0 +1,8 @@
+seed: 0, beam: 1, constrained: True
+test vote precision: 65.48 recall: 68.04 F1 = 66.73
+seed: 0, beam: 1, constrained: True
+test vote precision: 62.74 recall: 68.04 F1 = 65.28
+seed: 0, beam: 1, constrained: True
+test vote precision: 58.33 recall: 70.72 F1 = 63.93
+seed: 0, beam: 1, constrained: True
+test vote precision: 64.52 recall: 68.25 F1 = 66.33

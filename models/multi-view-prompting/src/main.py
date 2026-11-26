@@ -24,7 +24,7 @@ from transformers import get_linear_schedule_with_warmup
 
 from data_utils import ABSADataset, task_data_list, cal_entropy
 from const import *
-from data_utils import read_line_examples_from_file
+from data_utils import read_line_examples_from_file, aste_collate  # MvP-ASTE-TOOLKIT: fast padding
 from eval_utils import compute_scores, extract_spans_para
 
 # configure logging at the root level of Lightning
@@ -151,6 +151,12 @@ def init_args():
                         default=1.0,
                         type=float,
                         help="low resource data ratio")
+    # MvP-ASTE-TOOLKIT: numbers for the cost table (docs/quy-uoc-chung.md, muc 6)
+    parser.add_argument("--stats_file",
+                        default=None,
+                        type=str,
+                        help="ghi các số đo chi phí ra JSON (phut_train, trieu_tham_so, "
+                             "ms_moi_cau, mb_gpu)")
 
     args = parser.parse_args()
 
@@ -298,6 +304,7 @@ class T5FineTuner(pl.LightningModule):
             drop_last=True
             if args.data_ratio > 0.3 else False, # don't drop on few-shot
             shuffle=True,
+            collate_fn=aste_collate,  # MvP-ASTE-TOOLKIT: fast padding
             num_workers=2)
 
         return dataloader
@@ -312,6 +319,7 @@ class T5FineTuner(pl.LightningModule):
                                   max_len=self.config.max_seq_length)
         return DataLoader(val_dataset,
                           batch_size=self.config.eval_batch_size,
+                          collate_fn=aste_collate,  # MvP-ASTE-TOOLKIT: fast padding
                           num_workers=2)
 
     @staticmethod
@@ -325,7 +333,7 @@ class T5FineTuner(pl.LightningModule):
         # ids = self.tokenizer("text", return_tensors='pt')['input_ids'].tolist()[0]
         """
         if not os.path.exists('./force_tokens.json'):
-            dic = {"cate_tokens":{}, "all_tokens":{}, "sentiment_tokens":[], 'special_tokens':[]}
+            dic = {"cate_tokens":{}, "all_tokens":{}, "sentiment_tokens":{}, 'special_tokens':[]}  # MvP-ASTE-TOOLKIT: per-task dict
             for task in force_words.keys():
                 dic["all_tokens"][task] = {}
                 for dataset in force_words[task].keys():
@@ -342,9 +350,9 @@ class T5FineTuner(pl.LightningModule):
             sp_tokenize_res = []
             for sp in ['great', 'ok', 'bad']:
                 sp_tokenize_res.extend(self.tokenizer(sp, return_tensors='pt')['input_ids'].tolist()[0])
-            for task in force_words.keys():
-                dic['sentiment_tokens'][task] = sp_tokenize_res
-            dic['sentiment_tokens'] = sp_tokenize_res
+            for _ft_task in force_words.keys():
+                dic['sentiment_tokens'][_ft_task] = sp_tokenize_res
+            # MvP-ASTE-TOOLKIT: keep the per-task dict, and do not shadow `task`
             special_tokens_tokenize_res = []
             for w in ['[O','[A','[S','[C','[SS']:
                 special_tokens_tokenize_res.extend(self.tokenizer(w, return_tensors='pt')['input_ids'].tolist()[0]) 
@@ -400,6 +408,9 @@ class T5FineTuner(pl.LightningModule):
             force_list = source_ids[batch_id].tolist()
             if task != 'aste':  
                 force_list.extend(to_id['it'] + [1])  
+            elif str(data_name).startswith('dmaste'):
+                # MvP-ASTE-TOOLKIT: implicit aspect in DMASTE is written as 'it'
+                force_list.extend(to_id['it'] + [1])
             ret = force_list  
         elif cur_term in to_id['SS']:
             ret = [3] + to_id[']'] + [1]
@@ -439,6 +450,9 @@ def evaluate(model, task, data, data_type):
     if task in ['aste', 'tasd']:
         num_path = min(5, num_path)
 
+    # MvP-ASTE-TOOLKIT: dat 0 truoc khi do, de khong cong don giua cac lan goi
+    _eval_seconds = 0.0
+
     cache_file = os.path.join(
         args.output_dir, "result_{}{}{}_{}_path{}_beam{}.pickle".format(
             "best_" if args.load_ckpt_name else "",
@@ -457,11 +471,14 @@ def evaluate(model, task, data, data_type):
                               max_len=args.max_seq_length)
         data_loader = DataLoader(dataset,
                                  batch_size=args.eval_batch_size,
+                                 collate_fn=aste_collate,  # MvP-ASTE-TOOLKIT: fast padding
                                  num_workers=2)
         device = torch.device('cuda:0')
         model.model.to(device)
         model.model.eval()
 
+        # MvP-ASTE-TOOLKIT: chi do phan sinh, khong tinh nap mo hinh/tokenize
+        _eval_start = time.time()
         for batch in tqdm(data_loader):
             # beam search
             outs = model.model.generate(
@@ -487,6 +504,8 @@ def evaluate(model, task, data, data_type):
             ]
             outputs.extend(dec)
             targets.extend(target)
+
+        _eval_seconds = time.time() - _eval_start
 
         # save outputs and targets
         with open(cache_file, 'wb') as handle:
@@ -548,7 +567,11 @@ def evaluate(model, task, data, data_type):
                 for q in output_quads:
                     ac, at, sp, ot = q
                     if tasks[i] == "aste":
-                        if 'null' not in [at, ot, sp]:  # aste has no 'null', for zero-shot only
+                        # MvP-ASTE-TOOLKIT: DMASTE has implicit aspect terms.
+                        if datas[i].startswith('dmaste'):
+                            if sp != 'null' and ot != 'null':
+                                output.append(f'[A] {at} [O] {ot} [S] {sp}')
+                        elif 'null' not in [at, ot, sp]:  # aste has no 'null', for zero-shot only
                             output.append(f'[A] {at} [O] {ot} [S] {sp}')
 
                     elif tasks[i] == "tasd":
@@ -586,6 +609,57 @@ def evaluate(model, task, data, data_type):
     scores, all_labels, all_preds = compute_scores(outputs,
                                                    targets,
                                                    verbose=True)
+
+    # === MvP-ASTE-TOOLKIT: cost numbers for the shared table ===
+    # docs/quy-uoc-chung.md muc 6: phut_train (epoch dau -> het epoch cuoi, gom cham
+    # dev), trieu_tham_so (ca backbone), ms_moi_cau (du doan test / so cau), mb_gpu.
+    if args.stats_file:
+        try:
+            import json as _js
+            _stats = {}
+            if os.path.exists(args.stats_file):
+                with open(args.stats_file, "r", encoding="utf-8") as _f:
+                    _stats = _js.load(_f)
+            if data_type == "test":
+                _stats["ms_moi_cau"] = 1000.0 * _eval_seconds / max(1, len(sents))
+                _stats["test_f1_repo"] = scores["f1"]
+            _stats["trieu_tham_so"] = sum(
+                p.numel() for p in model.model.parameters()) / 1e6
+            if torch.cuda.is_available():
+                _stats["mb_gpu"] = torch.cuda.max_memory_allocated() / 2 ** 20
+            os.makedirs(os.path.dirname(os.path.abspath(args.stats_file)), exist_ok=True)
+            with open(args.stats_file, "w", encoding="utf-8") as _f:
+                _js.dump(_stats, _f, indent=2)
+        except Exception as _e:
+            print("WARNING: could not write stats:", _e)
+    # === end MvP-ASTE-TOOLKIT ===
+
+    # === MvP-ASTE-TOOLKIT: dump per-sentence predictions ===
+    try:
+        import json as _json
+        _dump_dir = os.path.join(args.output_dir, "predictions")
+        os.makedirs(_dump_dir, exist_ok=True)
+        _dump_name = "{}_{}_{}{}_path{}.jsonl".format(
+            task, data, data_type,
+            "_cd" if args.constrained_decode else "", num_path)
+        _dump_path = os.path.join(_dump_dir, _dump_name)
+        _n = min(len(sents), len(outputs), len(targets),
+                 len(all_labels), len(all_preds))
+        with open(_dump_path, "w", encoding="utf-8") as _f:
+            for _i in range(_n):
+                _rec = {
+                    "sent": " ".join(sents[_i]),
+                    "gold_raw": targets[_i],
+                    "pred_raw": outputs[_i],
+                    "gold": [list(_q) for _q in all_labels[_i]],
+                    "pred": [list(_q) for _q in all_preds[_i]],
+                }
+                _f.write(_json.dumps(_rec, ensure_ascii=False) + "\n")
+        print("saved predictions to", _dump_path)
+    except Exception as _e:  # never break scoring because of the dump
+        print("WARNING: could not dump predictions:", _e)
+    # === end MvP-ASTE-TOOLKIT ===
+
     return scores
 
 
@@ -674,12 +748,31 @@ def train_function(args):
 
         trainer = pl.Trainer(**train_params)
 
+        # MvP-ASTE-TOOLKIT: phut_train = epoch dau -> het epoch cuoi (gom cham dev),
+        # khong tinh cai thu vien/tai backbone (docs/quy-uoc-chung.md muc 6)
+        _train_start = time.time()
         trainer.fit(model)
+        _train_minutes = (time.time() - _train_start) / 60.0
 
         # save the final model
         model.model.save_pretrained(os.path.join(args.output_dir, "final"))
         tokenizer.save_pretrained(os.path.join(args.output_dir, "final"))
         print("Finish training and saving the model!")
+
+        if args.stats_file:
+            try:
+                import json as _js
+                _stats = {}
+                if os.path.exists(args.stats_file):
+                    with open(args.stats_file, "r", encoding="utf-8") as _f:
+                        _stats = _js.load(_f)
+                _stats["phut_train"] = _train_minutes
+                os.makedirs(os.path.dirname(os.path.abspath(args.stats_file)),
+                            exist_ok=True)
+                with open(args.stats_file, "w", encoding="utf-8") as _f:
+                    _js.dump(_stats, _f, indent=2)
+            except Exception as _e:
+                print("WARNING: could not write train minutes:", _e)
 
     if args.do_inference:
         print("\n****** Conduct inference on trained checkpoint ******")

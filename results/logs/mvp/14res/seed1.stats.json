@@ -1,0 +1,10 @@
+{
+  "dev_f1": 63.4,
+  "phut_train": 73.0,
+  "ms_moi_cau": 656.5,
+  "trieu_tham_so": 222.9,
+  "mb_gpu": null,
+  "test_f1_repo": 74.11,
+  "n_test": 492,
+  "ghi_chu": "phut_train = epoch 0 -> het epoch 19, gom cham dev (dung dinh nghia muc 6); ms_moi_cau = sinh 5 goc nhin cho ca tap test / so cau, khong tinh nap mo hinh; dev_f1 la epoch 19 vi MvP giu checkpoint epoch cuoi (khong phai dev cao nhat); mb_gpu khong do duoc vi log khong ghi"
+}
