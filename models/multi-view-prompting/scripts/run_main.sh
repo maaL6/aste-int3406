@@ -137,7 +137,9 @@ fi
 # chạy theo lô PARALLEL, mỗi job một GPU; lô xong mới sang lô tiếp
 gpu=0
 n=0
+LAST_SEED=0
 for job in $JOBS; do
+  LAST_SEED=${job##*:}
   run_one "${job%%:*}" "${job##*:}" $gpu &
   gpu=$(( (gpu + 1) % PARALLEL ))
   n=$(( n + 1 ))
@@ -147,13 +149,16 @@ for job in $JOBS; do
 done
 wait
 
-# ghi file dự đoán đúng format chung
+# ghi file dự đoán đúng format chung.
+# Lưu ý: DATA/SEED là biến CỤC BỘ trong run_one(), nên ở đây phải tự suy ra lại;
+# LAST_SEED lấy từ vòng lặp trên, DATA suy từ DATA_OVERRIDE.
 if [ -n "${DATA_OVERRIDE:-}" ]; then
   # DMASTE: mỗi domain ghi vào preds/mvp-dmaste/<domain>/seed<n>.jsonl
   DOMAIN=${DATA_OVERRIDE#dmaste_}
+  DATA=$(to_data_name "$DATA_OVERRIDE")
   "$PYTHON" "$ROOT/models/multi-view-prompting/export_preds.py" \
-    --runs "$OUT/runs/mvp/$DATA/seed0" --out "$ROOT" \
-    --dmaste --domain "$DOMAIN" --seed 0
+    --runs "$OUT/runs/mvp/$DATA/seed$LAST_SEED${SAVE_DIR_TAG}" --out "$ROOT" \
+    --dmaste --domain "$DOMAIN" --seed "$LAST_SEED"
 else
   "$PYTHON" "$ROOT/models/multi-view-prompting/export_preds.py" \
     --runs "$OUT/runs/mvp" --out "$ROOT" --k "$NUM_PATH"
