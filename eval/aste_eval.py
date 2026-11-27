@@ -295,10 +295,17 @@ def mean_and_half_range(values):
 
 
 def evaluate_all(preds_dir):
-    """Chấm mọi file {mô hình}/{tập}/seed{n}.jsonl. Trả về danh sách dòng, mỗi dòng một file."""
+    """Chấm mọi file {mô hình}/{tập}/seed{n}.jsonl. Trả về danh sách dòng, mỗi dòng một file.
+
+    Bỏ qua thư mục không phải tập ASTE (vd `mvp-dmaste/book`, `mvp-dmaste/pet`):
+    chúng có format file giống nhưng đáp án nằm ở bộ dữ liệu khác, chấm bằng
+    `models/multi-view-prompting/eval_dmaste.py`.
+    """
     rows = []
     for path in sorted(Path(str(preds_dir)).glob("*/*/seed*.jsonl")):
         model, tap = path.parts[-3], path.parts[-2]
+        if tap not in DATASETS:
+            continue
         try:
             res = evaluate_file(path, tap)
         except FormatError as e:

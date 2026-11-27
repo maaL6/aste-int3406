@@ -118,7 +118,7 @@ run_one() {
     --constrained_decode \
     --max_seq_length "$MAX_SEQ_LENGTH" \
     --stats_file "$STATS" \
-    $DO_TRAIN \
+    $DO_TRAIN --do_inference True \
     > "$LOG" 2>&1
 }
 
@@ -146,10 +146,19 @@ for job in $JOBS; do
   TAP=${job%%:*}
   SEED=${job##*:}
   (
+    # set -e của parent làm subshell thoát ngay khi run_one fail, nên phải tắt
+    # trước khi bắt exit code, không thì $? không bao giờ đọc được.
+    set +e
     run_one "$TAP" "$SEED" $gpu
     rc=$?
+    LOG=$OUT/logs/mvp/$TAP/seed$SEED${SAVE_DIR_TAG}.log
+    DATA_NAME=$(to_data_name "$TAP")
+    PRED_DIR=$OUT/runs/mvp/$DATA_NAME/seed$SEED${SAVE_DIR_TAG}/predictions
+    # exit 0 chưa đủ: phải có file dự đoán thật, không thì export chỉ báo MISSING
+    if [ "$rc" -eq 0 ] && ! ls "$PRED_DIR"/*.jsonl >/dev/null 2>&1; then
+      rc=99
+    fi
     if [ "$rc" -ne 0 ]; then
-      LOG=$OUT/logs/mvp/$TAP/seed$SEED${SAVE_DIR_TAG}.log
       {
         echo "!! $TAP seed$SEED lỗi (exit $rc). 30 dòng cuối của $LOG:"
         tail -n 30 "$LOG" 2>/dev/null

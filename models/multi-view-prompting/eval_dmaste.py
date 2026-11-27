@@ -23,7 +23,11 @@ import json
 import pathlib
 import sys
 
-DOMAINS = ["book", "pet", "toy", "grocery", "electronics", "fashion", "beauty", "home"]
+# 4 domain đích (chỉ có dev/test) — đây là phần nhóm chạy zero-shot.
+# 4 domain in-domain của paper (electronics/fashion/beauty/home) cần train riêng,
+# không nằm trong phạm vi nên để ngoài danh sách mặc định.
+DOMAINS = ["book", "pet", "toy", "grocery"]
+IN_DOMAIN = ["electronics", "fashion", "beauty", "home"]
 POL = {"great": "POS", "bad": "NEG", "ok": "NEU",
        "pos": "POS", "neg": "NEG", "neu": "NEU",
        "POS": "POS", "NEG": "NEG", "NEU": "NEU"}

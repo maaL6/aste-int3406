@@ -224,13 +224,20 @@ def export_dmaste(ckpt_run: pathlib.Path, out: pathlib.Path,
             continue
         src = dumps[-1]
         # căn span về token của câu, giống phần ASTE-Data-V2
-        records, unaligned = [], 0
+        records, unaligned, dropped = [], 0, 0
         for rec in read_jsonl(src):
             sent_tokens = rec["sent"].split()
             quads = []
             for ac, at, sp, ot in rec["pred"]:
                 sp = POLARITY.get(sp)
                 if sp is None:
+                    continue
+                # MvP-ASTE-TOOLKIT: DMASTE cho phep khia canh an (null), nhung mot
+                # bo ba ma CA HAI deu null la bo ba rong: mo hinh khong sinh duoc
+                # span nao cho cau qua dai. Giu lai se lam giam precision mot cach
+                # gia tao, vi no khong bao gio khop dap an.
+                if str(at).strip().lower() == "null" and str(ot).strip().lower() == "null":
+                    dropped += 1
                     continue
                 for name, txt in (("aspect", at), ("opinion", ot)):
                     span = align(sent_tokens, txt)
@@ -246,8 +253,8 @@ def export_dmaste(ckpt_run: pathlib.Path, out: pathlib.Path,
                             "tokens": sent_tokens, "pred": quads})
         dst = out / "results" / "preds" / "mvp-dmaste" / dom / ("seed%d.jsonl" % seed)
         write(dst, records)
-        print("%-8s %-5d  %s (%d câu, %d span lệch)"
-              % (dom, seed, dst, len(records), unaligned))
+        print("%-8s %-5d  %s (%d câu, %d span lệch, %d bộ ba rỗng bỏ)"
+              % (dom, seed, dst, len(records), unaligned, dropped))
 
 
 def main(argv=None) -> int:
