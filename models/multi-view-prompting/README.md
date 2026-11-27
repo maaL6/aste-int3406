@@ -212,7 +212,37 @@ Bốn điều phải nói rõ trong báo cáo, nếu không người đọc sẽ
   không tranh VRAM, nhưng `phut_train` có thể cao hơn chạy đơn lẻ ~5% do chia sẻ CPU
   (tokenize dùng 2 worker). Đừng so trực tiếp với bảng của GTS nếu GTS chạy tuần tự.
 
-## 8. DMASTE zero-shot
+## 8. Demo Gradio
+
+`demo/app.py`. Hai mô hình MvP chạy **trực tiếp** từ checkpoint; năm mô hình còn lại
+(`span-aste`, `gts-bert`, `emcgcn`, `rule`, `crf`) hiện **dự đoán đã lưu** trong
+`results/preds/`, nên chỉ trả lời được câu có trong tập test. Cách này tránh phải nạp
+bốn bộ thư viện khác nhau vào cùng một tiến trình (đúng như `phan-cong-cong-viec.md`
+mục 6 dự phòng).
+
+```bash
+python demo/app.py --share                     # mở link *.gradio.live
+python demo/app.py --self-test                 # kiểm tra backend, không cần Gradio
+python demo/app.py --self-test --domain book   # kiểm tra nhánh DMASTE
+python demo/app.py --no-mvp                    # chỉ hiện dự đoán lưu sẵn
+```
+
+Trong UI có dropdown **Domain**: `aste` dùng checkpoint ASTE-Data-V2 với
+`max_seq_length 200`; `book`/`pet`/`toy`/`grocery` dùng **cùng checkpoint đó** nhưng
+chạy zero-shot với `max_seq_length 256`, đúng cấu hình lúc chấm điểm.
+
+Ba điểm cần biết khi chạy trên Kaggle:
+
+- **Cần GPU** cho phần MvP trực tiếp. Không có GPU thì `demo/app.py` vẫn mở và hiện dự
+  đoán lưu sẵn, chỉ hai dòng MvP báo "không có checkpoint để nạp".
+- **Checkpoint không nằm trong git** (`.gitignore` chặn `*.bin`). Phải Add Input
+  Kaggle Dataset `aste-ckpt-mvp` hoặc output session đã train; `discover_checkpoints`
+  tự tìm trong `/kaggle/input` nếu `results/runs/` rỗng.
+- **`force_tokens.json`** phải khớp task đang chạy. Script tự tạo file này nếu thiếu,
+  nhưng nếu file cũ còn sót từ lần chạy DMASTE thì chuỗi `[A] x [O] y [S] z` vẫn đúng
+  nên không ảnh hưởng.
+
+## 9. DMASTE zero-shot
 
 Theo kế hoạch nhóm (mục 5): dùng checkpoint đã train trên ASTE-Data-V2, chạy thẳng lên
 bốn domain đích (`book`, `pet`, `toy`, `grocery` — chỉ có dev/test), không train lại.
@@ -234,9 +264,60 @@ Hai tham số phải đổi so với ASTE-Data-V2, nếu không kết quả sẽ
   thì truncation cắt mất span trong khi chỉ số span vẫn tính trên câu gốc.
 - **`EVAL_BATCH_SIZE=32`.** 256 token × batch 64 dễ OOM trên T4 15 GB.
 
-Bỏ khía cạnh ẩn làm bài toán dễ đi đáng kể: hơn 40% bộ ba của bốn domain đích là ẩn
-(book 404/1068, pet 523/1104, toy 611/1431, grocery 514/1281), nên số zero-shot ở đây
-**không so trực tiếp** với bảng in-domain của paper DMASTE.
+### Kết quả
 
-Số liệu điền vào `results/runs.csv` sau khi chạy notebook, cột `ghi_chu` ghi rõ
+| Domain | P | R | F1 (nhóm) | F1 (repo) | ms/câu | MB GPU |
+|---|---:|---:|---:|---:|---:|---:|
+| book | 22.37 | 15.08 | **18.02** | 17.47 | 710 | 2659 |
+| pet | 28.74 | 17.24 | **21.55** | 19.92 | 630 | 2924 |
+| toy | 24.85 | 14.91 | **18.64** | 18.43 | 637 | 2793 |
+| grocery | 28.60 | 16.86 | **21.22** | 20.67 | 595 | 2652 |
+| **micro** | **25.96** | **15.96** | **19.77** | — | | |
+
+### Bốn điều phải nói rõ trong báo cáo
+
+**1. Đây không so được với bảng DMASTE của paper.** Paper báo số **in-domain**
+(train riêng từng domain, giữ khía cạnh ẩn: Electronics 47.86 / Beauty 46.46 /
+Fashion 50.38 / Home 49.14). Nhóm chạy **zero-shot** trên **4 domain khác** và **bỏ
+hơn 40% bộ ba** (khía cạnh ẩn). Ba khác biệt cùng lúc, nên chỉ dùng cột Span-ASTE của
+A làm mốc nếu A cũng chạy zero-shot cùng 4 domain.
+
+**2. Recall thấp là nguyên nhân chính, không phải precision.** Micro P = 25.96 nhưng
+R = 15.96. Model dự đoán 1,737 bộ ba trong khi đáp án có 2,826 — thiếu 39%.
+
+**3. Recall giảm đều theo độ dài câu**, đây là bằng chứng định lượng cho giả thuyết
+"train trên câu ngắn, test trên câu dài":
+
+| Độ dài câu | book | pet | toy | grocery |
+|---|---:|---:|---:|---:|
+| 21–40 từ | 21.0% | 26.7% | 26.5% | 26.0% |
+| 41–80 từ | 15.1% | 20.0% | 15.0% | 13.7% |
+| > 80 từ | 9.7% | 8.4% | 7.8% | 8.9% |
+
+Recall giảm khoảng 3 lần từ câu ngắn sang câu dài, ở cả 4 domain. MvP học từ câu
+nhà hàng/laptop trung bình 19–20 từ với 1.8 bộ ba; DMASTE trung bình 60–70 từ với
+3.3 bộ ba, nhiều câu trên 200 từ.
+
+**4. Truncation chỉ ảnh hưởng 1–2% số câu**, không phải nguyên nhân chính. Kiểm tra:
+chỉ 3/260 câu của book dài hơn 200 token, và những câu đó đúng là câu sinh ra bộ ba
+rỗng. Nhưng phần lớn tổn thất nằm ở câu 40–80 từ, vốn không bị cắt.
+
+### Vì sao số của nhóm khác số của repo
+
+Chênh lệch không phải do cách so khớp mà do **bộ ba rỗng**. Với `pet`:
+
+| | gold | pred | hit | P | R | F1 |
+|---|---:|---:|---:|---:|---:|---:|
+| repo | 580 | **424** | 100 | 23.58 | 17.24 | 19.92 |
+| nhóm | 580 | **348** | 100 | 28.74 | 17.24 | **21.55** |
+
+`hit` và `recall` **giống hệt**, chỉ `pred` khác: 424 − 348 = 76 bộ ba rỗng
+(`[A] null [O] null [S] ...`) mà repo đếm vào mẫu số precision. Chúng chắc chắn không
+khớp đáp án, nên giữ lại chỉ làm precision thấp giả tạo. Recall không đổi vì không có
+bộ ba rỗng nào trong đáp án.
+
+Đây là lý do phải lọc chúng, và cũng là lý do khi báo cáo nên dùng số của nhóm
+(`test_f1`) làm số chính, số repo chỉ để đối chiếu.
+
+Số liệu đã điền vào `results/runs.csv` (4 dòng `mvp-dmaste`), cột `ghi_chu` ghi rõ
 "zero-shot, bỏ mẫu khía cạnh ẩn".
